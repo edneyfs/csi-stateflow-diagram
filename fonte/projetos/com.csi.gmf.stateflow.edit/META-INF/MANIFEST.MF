@@ -1,0 +1,14 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: State flow edit
+Bundle-SymbolicName: com.csi.gmf.stateflow.edit; singleton:=true
+Bundle-Version: 1.0.2
+Bundle-ClassPath: .
+Bundle-Activator: com.csi.gmf.stateflow.provider.StateflowEditPlugin$Implementation
+Bundle-Vendor: CSI - Comercio Solucoes Inteligentes Ltda.
+Bundle-Localization: plugin
+Export-Package: com.csi.gmf.stateflow.provider
+Require-Bundle: org.eclipse.core.runtime,
+ com.csi.gmf.stateflow;visibility:=reexport,
+ org.eclipse.emf.edit;visibility:=reexport
+Eclipse-LazyStart: true

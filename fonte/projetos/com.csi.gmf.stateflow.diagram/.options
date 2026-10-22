@@ -1,0 +1,7 @@
+# Tracing options for the com.csi.gmf.stateflow.diagram plug-in
+
+# Common issues
+com.csi.gmf.stateflow.diagram/debug=false
+
+# Visual IDs
+com.csi.gmf.stateflow.diagram/debug/visualID=false

@@ -1,0 +1,13 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: State Flow
+Bundle-SymbolicName: com.csi.gmf.stateflow; singleton:=true
+Bundle-Version: 1.0.2
+Bundle-ClassPath: .
+Bundle-Vendor: CSI - Comercio Solucoes Inteligentes Ltda.
+Bundle-Localization: plugin
+Export-Package: com.csi.gmf.stateflow,
+ com.csi.gmf.stateflow.impl,
+ com.csi.gmf.stateflow.util
+Require-Bundle: org.eclipse.core.runtime,
+ org.eclipse.emf.ecore;visibility:=reexport

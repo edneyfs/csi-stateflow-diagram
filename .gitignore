@@ -1,0 +1,13 @@
+# Dependencies & Build
+node_modules/
+dist/
+build/
+*.log
+
+# Large binaries & Zips
+*.zip
+cfr-0.152.jar
+
+# OS
+Thumbs.db
+.DS_Store
