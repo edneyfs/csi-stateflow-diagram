@@ -2,7 +2,7 @@
   "name": "csi-stateflow-studio",
   "version": "1.0.0",
   "description": "Studio visual independente para máquinas de estado CSI/P2K (.stateflow e .executionflow)",
-  "main": "dist-electron/main.js",
+  "main": "dist-electron/electron/main.js",
   "scripts": {
     "dev": "vite",
     "dev:electron": "concurrently \"vite\" \"wait-on tcp:5173 && electron .\"",

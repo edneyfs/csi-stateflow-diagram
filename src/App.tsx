@@ -317,7 +317,7 @@ export function App() {
       });
       window.api.scanJavaClasses(workspacePath).then((classes) => {
         if (classes && classes.length > 0) {
-          setScannedJavaClasses(classes.map((c) => ({ name: c.className, pkg: c.fullPackage })));
+          setScannedJavaClasses(classes.map((c) => ({ name: c.className, pkg: c.packageName })));
         }
       });
     }
@@ -397,7 +397,7 @@ export function App() {
             className,
             results: refs.map((r) => ({
               diagramName: r.diagramName,
-              path: r.relativePath,
+              path: r.diagramPath,
               nodePathKey: r.nodePathKey,
             })),
           });
@@ -823,7 +823,7 @@ export function App() {
                   />
                 </div>
 
-                {selectedNode.data?.className && (
+                {Boolean(selectedNode.data?.className) && (
                   <div>
                     <label className="text-slate-500 text-[10px] uppercase font-semibold">
                       Class Name (Pacote Completo)

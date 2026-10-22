@@ -321,8 +321,8 @@ export class XmlEngine {
     return lines.join('\n');
   }
 
-  private static extractAttr(attrs: string, name: string): string | null {
+  private static extractAttr(attrs: string, name: string): string | undefined {
     const match = attrs.match(new RegExp(`\\b${name}="([^"]*)"`));
-    return match ? match[1] : null;
+    return match ? match[1] : undefined;
   }
 }
