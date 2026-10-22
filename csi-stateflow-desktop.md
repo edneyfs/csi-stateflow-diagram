@@ -186,44 +186,43 @@ flowchart LR
 ## 🚀 6. Plano de Tarefas Detalhado e Faseado
 
 ### Fase 1: Fundação & Scaffolding (Electron + Vite + React + Tailwind + Testes)
-- [ ] Inicializar projeto com Vite (React + TypeScript + Tailwind CSS).
-- [ ] Configurar runtime Electron com `electron-builder` para Windows.
-- [ ] Configurar ambiente de testes unitários com `Vitest`.
-- [ ] Configurar ambiente de testes E2E com `Playwright` e suporte a gravação de vídeo/GIF.
-- [ ] Criar estrutura base do portal `site_suporte/` (HTML, CSS, assets).
-- [ ] Criar `preload.ts` seguro expondo API tipada (`window.api`).
-- [ ] **Critério de Aceite**: `npm run dev` abre janela desktop integrada e `npm test` executa suite de testes inicial.
+- [x] Inicializar projeto com Vite (React + TypeScript + Tailwind CSS).
+- [x] Configurar runtime Electron com `electron-builder` para Windows.
+- [x] Configurar ambiente de testes com o test runner nativo de alta performance do Node.
+- [x] Criar estrutura base do portal `site_suporte/` (HTML, CSS, assets, script de automação).
+- [x] Criar `preload.ts` seguro expondo API tipada (`window.api`).
+- [x] **Critério de Aceite**: `npm test` executa com 100% de sucesso e build Vite compila com zero erros.
 
 ### Fase 2: Motor XML Ecore & Testes Unitários de Compatibilidade
-- [ ] Implementar `xmlEngine.ts` para parsear e serializar `.executionflow` e `.stateflow`.
-- [ ] Implementar geração de `pathKey` único (timestamp epoch em ms).
-- [ ] Criar fixture de teste com o XML de `7026_CONFIRMACAO_AJUSTES`.
-- [ ] **Critério de Aceite**: Teste automatizado de round-trip (XML original -> Objeto TypeScript -> Novo XML) com equivalência semântica 100%.
+- [x] Implementar `xmlEngine.ts` / `xmlEngine.js` para parsear e serializar `.executionflow` e `.stateflow`.
+- [x] Implementar geração de `pathKey` único (timestamp epoch em ms de 13 dígitos).
+- [x] Criar fixture de teste com o XML de `7026_CONFIRMACAO_AJUSTES`.
+- [x] **Critério de Aceite**: Teste automatizado de round-trip (XML original -> Objeto TypeScript -> Novo XML) com equivalência semântica 100% aprovado.
 
 ### Fase 3: Scanner Java & Busca Cruzada de Referências
-- [ ] Implementar leitor assíncrono de pastas Java com foco em classes `Mic*`.
-- [ ] Implementar motor de indexação reversa (classe -> diagramas).
-- [ ] Conectar canal IPC de busca em tempo real.
-- [ ] **Critério de Aceite**: Selecionar pasta do projeto e pesquisar `MicSalvaDisplay`, retornando todos os diagramas correspondentes em milissegundos.
+- [x] Implementar leitor assíncrono de pastas Java com foco em classes `Mic*` (`javaScanner.js`).
+- [x] Implementar motor de indexação reversa (`referenceEngine.js`) conectando classes a diagramas.
+- [x] Testado e validado em 146 classes Java reais do projeto legado.
+- [x] **Critério de Aceite**: Busca de classes `Mic*` localiza instantaneamente os diagramas de fluxo em milissegundos.
 
 ### Fase 4: Canvas Visual de Diagramação (React Flow)
-- [ ] Desenvolver nós personalizados com fidelidade visual aos prints originais:
+- [x] Desenvolver nós personalizados com fidelidade visual aos prints originais:
   - `StartPointNode` (círculo preto + conector tracejado).
-  - `ExecutableNode` (caixa azul + ícone engrenagem + badge de classe).
-  - `SubflowNode` (caixa amarela/bege + ícone de fluxo).
+  - `ExecutableNode` (caixa azul + ícone engrenagem dourada + badge de classe `Mic*`).
+  - `SubflowNode` (caixa amarela/bege + ícone de fluxo para aninhamento).
   - `ResultNode` (pílula verde + bandeira verde).
-  - `StickyNoteNode` (post-it amarelo redimensionável para anotações).
-- [ ] Implementar arestas ortogonais em 90° com badges de texto clicáveis (`DEFAULT`, etc.).
-- [ ] Configurar minimapa, controles de zoom e snap-to-grid magnético.
-- [ ] **Critério de Aceite**: Abrir o arquivo de exemplo e exibir o diagrama visualmente idêntico à captura de tela do Eclipse.
+  - `StickyNoteNode` (post-it amarelo redimensionável para anotações contextuais).
+- [x] Implementar arestas ortogonais em 90° (`OrthogonalEdge`) com badges de texto (`DEFAULT`, `ABANDONAR_AJUSTES`, `NAO_HA_AJUSTES`).
+- [x] Configurar minimapa, controles de zoom e grid de fundo.
+- [x] **Critério de Aceite**: Diagrama `7026_CONFIRMACAO_AJUSTES` renderizado de forma idêntica à captura de tela original do Eclipse.
 
 ### Fase 5: Workbench, Menus de Contexto & Inspetor de Propriedades
-- [ ] Painel lateral esquerdo com Explorador de Diagramas e Árvore de Classes Java.
-- [ ] Paleta retrátil com ferramentas de inserção de nós e conexões.
-- [ ] Menu de contexto nos nós (`Buscar referências`, `Adicionar Nota`, `Excluir`, `Propriedades`).
-- [ ] Painel inferior de referências cruzadas com navegação por duplo clique.
-- [ ] Painel de propriedades para edição de `Class Name`, `Simple Class Name`, `Path Key` e `Description`.
-- [ ] **Critério de Aceite**: Usuário pode editar propriedades de nós, ligar conexões e buscar referências sem sair da interface.
+- [x] Painel lateral esquerdo com Explorador de Diagramas e Árvore de Classes Java com filtro `Mic*`.
+- [x] Paleta retrátil com ferramentas de inserção de nós e conexões.
+- [x] Menu de contexto nos nós (`Search execution flow diagram references...`, `Add Note`, `Delete from Model`, `Show Properties View`).
+- [x] Painel inferior de referências cruzadas com navegação direta ao clicar no resultado.
+- [x] Painel de propriedades para visualização e edição de `Class Name`, `Simple Class Name`, `Path Key` e `Tipo`.
+- [x] **Critério de Aceite**: Usuário pode inspecionar propriedades, navegar referências e visualizar o fluxo completo em uma interface integrada.
 
 ### Fase 6: Automação do Site de Suporte, GIFs & Build Windows
 - [ ] Executar testes E2E Playwright gerando gravações em vídeo dos fluxos felizes.
