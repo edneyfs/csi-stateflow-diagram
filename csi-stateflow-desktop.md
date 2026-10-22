@@ -155,13 +155,44 @@ graph TD
 
 ---
 
-## 🚀 4. Plano de Tarefas Detalhado e Faseado
+## 📚 5. Pipeline Local de Suporte, Testes e GIFs Automatizados (`site_suporte`)
 
-### Fase 1: Fundação & Scaffolding (Electron + Vite + React + Tailwind)
+> **Regra Fundamental**: A automação de documentação e geração de GIFs é **100% processo determinístico** (sem agentes de IA fora do fluxo de desenvolvimento). A IA atua no desenvolvimento para escrever os testes e templates; o build local executa tudo via scripts de automação.
+
+### 5.1 Fluxo do Processo de Documentação Viva
+```mermaid
+flowchart LR
+    A[Testes E2E Playwright - Fluxo Feliz] -->|Grava vídeo webm| B[Pasta temp de vídeos]
+    B -->|Script local ffmpeg / converter| C[GIFs animados em site_suporte/assets/gifs/]
+    C -->|Gera / Atualiza| D[Portal site_suporte/index.html]
+    D -->|Deploy / Servidor Local| E[Site de Suporte Autônomo com Guias e GIFs]
+```
+
+1. **Gravação do Fluxo Feliz nos Testes E2E**:
+   * Cada teste de fluxo principal (ex: `abrir-diagrama.spec.ts`, `buscar-referencias.spec.ts`, `criar-novo-fluxo.spec.ts`) executa ações visuais pausadas com destaque para gravação.
+   * Playwright configurado com `recordVideo: { dir: 'test-results/videos' }`.
+2. **Conversor de Vídeo para GIF**:
+   * Script automatizado (`scripts/generate-doc-gifs.js`) que processa os `.webm` e exporta `.gif` otimizados para `site_suporte/assets/gifs/`.
+3. **Portal Estático de Suporte (`site_suporte/index.html`)**:
+   * Inspirado no padrão do `FlowBusiness/site_suporte`, contendo:
+     * Visão Geral da Ferramenta e Instalação do `.exe`.
+     * Guia Interativo de Modelagem com os GIFs animados dos fluxos felizes.
+     * Tabela de Atalhos de Teclado e Dicas de Usabilidade.
+     * Documentação da Estrutura XML Ecore para a equipe de backend.
+   * O aplicativo desktop incluirá no menu superior: `Ajuda -> Central de Ajuda (abrir site_suporte localmente)`.
+
+---
+
+## 🚀 6. Plano de Tarefas Detalhado e Faseado
+
+### Fase 1: Fundação & Scaffolding (Electron + Vite + React + Tailwind + Testes)
 - [ ] Inicializar projeto com Vite (React + TypeScript + Tailwind CSS).
 - [ ] Configurar runtime Electron com `electron-builder` para Windows.
+- [ ] Configurar ambiente de testes unitários com `Vitest`.
+- [ ] Configurar ambiente de testes E2E com `Playwright` e suporte a gravação de vídeo/GIF.
+- [ ] Criar estrutura base do portal `site_suporte/` (HTML, CSS, assets).
 - [ ] Criar `preload.ts` seguro expondo API tipada (`window.api`).
-- [ ] **Critério de Aceite**: `npm run dev` abre janela desktop integrada e responsiva.
+- [ ] **Critério de Aceite**: `npm run dev` abre janela desktop integrada e `npm test` executa suite de testes inicial.
 
 ### Fase 2: Motor XML Ecore & Testes Unitários de Compatibilidade
 - [ ] Implementar `xmlEngine.ts` para parsear e serializar `.executionflow` e `.stateflow`.
@@ -194,7 +225,9 @@ graph TD
 - [ ] Painel de propriedades para edição de `Class Name`, `Simple Class Name`, `Path Key` e `Description`.
 - [ ] **Critério de Aceite**: Usuário pode editar propriedades de nós, ligar conexões e buscar referências sem sair da interface.
 
-### Fase 6: Validação Integrada & Build Windows
-- [ ] Testar fluxo completo de ponta a ponta: criar novo fluxo, adicionar classes `Mic*` do projeto, conectar resultados, salvar XML e reabrir.
+### Fase 6: Automação do Site de Suporte, GIFs & Build Windows
+- [ ] Executar testes E2E Playwright gerando gravações em vídeo dos fluxos felizes.
+- [ ] Executar script de conversão de vídeos para GIFs animados em `site_suporte/assets/gifs/`.
+- [ ] Atualizar `site_suporte/index.html` com os GIFs gerados e documentação de suporte.
 - [ ] Configurar empacotamento com `electron-builder` para gerar executável portátil `.exe` para Windows.
-- [ ] **Critério de Aceite**: Executável `.exe` gerado rodando de forma independente em qualquer máquina Windows sem necessidade de Java, Node ou Eclipse instalados.
+- [ ] **Critério de Aceite**: Executável `.exe` gerado com sucesso e site de suporte gerado com todos os GIFs dos fluxos felizes.
