@@ -1,0 +1,43 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: State Flow Diagram Builder
+Bundle-SymbolicName: com.csi.gmf.stateflow.diagram; singleton:=true
+Bundle-Version: 1.0.0.0
+Bundle-ClassPath: .
+Bundle-Activator: com.csi.gmf.stateflow.diagram.part.StateflowDiagramEditorPlugin
+Bundle-Vendor: CSI - Comércio Soluções Inteligentes Ltda.
+Bundle-Localization: plugin
+Export-Package: com.csi.gmf.stateflow.diagram.edit.parts,
+ com.csi.gmf.stateflow.diagram.part,
+ com.csi.gmf.stateflow.diagram.providers
+Require-Bundle: org.eclipse.core.runtime,
+ org.eclipse.core.resources,
+ org.eclipse.jface,
+ org.eclipse.ui.ide,
+ org.eclipse.ui.views,
+ org.eclipse.ui.workbench,
+ org.eclipse.ui.workbench.texteditor,
+ org.eclipse.emf.ecore,
+ org.eclipse.emf.ecore.xmi,
+ org.eclipse.emf.edit.ui,
+ org.eclipse.gef;visibility:=reexport,
+ org.eclipse.gmf.runtime.emf.core,
+ org.eclipse.gmf.runtime.emf.commands.core,
+ org.eclipse.gmf.runtime.emf.ui.properties,
+ org.eclipse.gmf.runtime.diagram.ui,
+ org.eclipse.gmf.runtime.diagram.ui.printing.render,
+ org.eclipse.gmf.runtime.diagram.ui.printing,
+ org.eclipse.gmf.runtime.diagram.ui.providers,
+ org.eclipse.gmf.runtime.diagram.ui.providers.ide,
+ org.eclipse.gmf.runtime.diagram.ui.render,
+ org.eclipse.gmf.runtime.diagram.ui.resources.editor,
+ org.eclipse.gmf.runtime.diagram.ui.resources.editor.ide,
+ org.eclipse.gmf.runtime.notation.providers,
+ com.csi.gmf.stateflow;visibility:=reexport,
+ com.csi.gmf.stateflow.edit;visibility:=reexport,
+ org.eclipse.emf.validation;visibility:=reexport,
+ org.eclipse.gmf.runtime.draw2d.ui;visibility:=reexport,
+ org.eclipse.draw2d;visibility:=reexport,
+ org.eclipse.search,
+ org.eclipse.gmf.runtime.diagram.ui.properties
+Eclipse-LazyStart: true

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+
+<!--
+ <copyright>
+ </copyright>
+
+ $Id$
+-->
+
+<plugin>
+
+
+  <extension
+    point = "org.eclipse.ui.newWizards">
+    <category
+      id = "org.eclipse.emf.ecore.Wizard.category.ID"
+      name="%_UI_Wizard_category">
+    </category>
+    <wizard
+      id = "com.csi.gmf.executionflow.presentation.ExecutionflowModelWizardID"
+      name = "%_UI_ExecutionflowModelWizard_label"
+      class = "com.csi.gmf.executionflow.presentation.ExecutionflowModelWizard"
+      category = "org.eclipse.emf.ecore.Wizard.category.ID"
+      icon = "icons/full/obj16/ExecutionflowModelFile.gif">
+      <description>%_UI_ExecutionflowModelWizard_description</description>
+      <selection class = "org.eclipse.core.resources.IResource" />
+    </wizard>
+  </extension>
+
+  <extension point = "org.eclipse.ui.editors">
+    <editor
+        id = "com.csi.gmf.executionflow.presentation.ExecutionflowEditorID"
+        name = "%_UI_ExecutionflowEditor_label"
+        icon = "icons/full/obj16/ExecutionflowModelFile.gif"
+        extensions = "executionflow"
+        class = "com.csi.gmf.executionflow.presentation.ExecutionflowEditor" 
+        contributorClass="com.csi.gmf.executionflow.presentation.ExecutionflowActionBarContributor" >
+    </editor>
+  </extension>    
+</plugin>

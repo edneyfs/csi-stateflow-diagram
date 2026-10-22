@@ -1,0 +1,1200 @@
+/**
+ * <copyright>
+ * </copyright>
+ *
+ * $Id$
+ */
+package com.csi.gmf.executionflow;
+
+import org.eclipse.emf.ecore.EAttribute;
+import org.eclipse.emf.ecore.EClass;
+import org.eclipse.emf.ecore.EDataType;
+import org.eclipse.emf.ecore.EPackage;
+import org.eclipse.emf.ecore.EReference;
+
+/**
+ * <!-- begin-user-doc -->
+ * The <b>Package</b> for the model.
+ * It contains accessors for the meta objects to represent
+ * <ul>
+ *   <li>each class,</li>
+ *   <li>each feature of each class,</li>
+ *   <li>each enum,</li>
+ *   <li>and each data type</li>
+ * </ul>
+ * <!-- end-user-doc -->
+ * @see com.csi.gmf.executionflow.ExecutionflowFactory
+ * @model kind="package"
+ * @generated
+ */
+public interface ExecutionflowPackage extends EPackage {
+	/**
+	 * The package name.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	String eNAME = "executionflow";
+
+	/**
+	 * The package namespace URI.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	String eNS_URI = "http:///com/csi/gmf/executionflow.ecore";
+
+	/**
+	 * The package namespace name.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	String eNS_PREFIX = "com.csi.gmf.executionflow";
+
+	/**
+	 * The singleton instance of the package.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	ExecutionflowPackage eINSTANCE = com.csi.gmf.executionflow.impl.ExecutionflowPackageImpl.init();
+
+	/**
+	 * The meta object id for the '{@link com.csi.gmf.executionflow.impl.FlowObjectImpl <em>Flow Object</em>}' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see com.csi.gmf.executionflow.impl.FlowObjectImpl
+	 * @see com.csi.gmf.executionflow.impl.ExecutionflowPackageImpl#getFlowObject()
+	 * @generated
+	 */
+	int FLOW_OBJECT = 4;
+
+	/**
+	 * The feature id for the '<em><b>Path Key</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int FLOW_OBJECT__PATH_KEY = 0;
+
+	/**
+	 * The number of structural features of the '<em>Flow Object</em>' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int FLOW_OBJECT_FEATURE_COUNT = 1;
+
+	/**
+	 * The meta object id for the '{@link com.csi.gmf.executionflow.impl.SourceConnectableImpl <em>Source Connectable</em>}' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see com.csi.gmf.executionflow.impl.SourceConnectableImpl
+	 * @see com.csi.gmf.executionflow.impl.ExecutionflowPackageImpl#getSourceConnectable()
+	 * @generated
+	 */
+	int SOURCE_CONNECTABLE = 6;
+
+	/**
+	 * The feature id for the '<em><b>Path Key</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SOURCE_CONNECTABLE__PATH_KEY = FLOW_OBJECT__PATH_KEY;
+
+	/**
+	 * The number of structural features of the '<em>Source Connectable</em>' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SOURCE_CONNECTABLE_FEATURE_COUNT = FLOW_OBJECT_FEATURE_COUNT + 0;
+
+	/**
+	 * The meta object id for the '{@link com.csi.gmf.executionflow.impl.ExecutableFlowObjectImpl <em>Executable Flow Object</em>}' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see com.csi.gmf.executionflow.impl.ExecutableFlowObjectImpl
+	 * @see com.csi.gmf.executionflow.impl.ExecutionflowPackageImpl#getExecutableFlowObject()
+	 * @generated
+	 */
+	int EXECUTABLE_FLOW_OBJECT = 0;
+
+	/**
+	 * The feature id for the '<em><b>Path Key</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int EXECUTABLE_FLOW_OBJECT__PATH_KEY = SOURCE_CONNECTABLE__PATH_KEY;
+
+	/**
+	 * The feature id for the '<em><b>Class Name</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int EXECUTABLE_FLOW_OBJECT__CLASS_NAME = SOURCE_CONNECTABLE_FEATURE_COUNT + 0;
+
+	/**
+	 * The feature id for the '<em><b>Simple Class Name</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int EXECUTABLE_FLOW_OBJECT__SIMPLE_CLASS_NAME = SOURCE_CONNECTABLE_FEATURE_COUNT + 1;
+
+	/**
+	 * The number of structural features of the '<em>Executable Flow Object</em>' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int EXECUTABLE_FLOW_OBJECT_FEATURE_COUNT = SOURCE_CONNECTABLE_FEATURE_COUNT + 2;
+
+	/**
+	 * The meta object id for the '{@link com.csi.gmf.executionflow.impl.ExecutionFlowImpl <em>Execution Flow</em>}' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see com.csi.gmf.executionflow.impl.ExecutionFlowImpl
+	 * @see com.csi.gmf.executionflow.impl.ExecutionflowPackageImpl#getExecutionFlow()
+	 * @generated
+	 */
+	int EXECUTION_FLOW = 1;
+
+	/**
+	 * The feature id for the '<em><b>Title</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int EXECUTION_FLOW__TITLE = 0;
+
+	/**
+	 * The feature id for the '<em><b>Executable Flow Objects</b></em>' containment reference list.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int EXECUTION_FLOW__EXECUTABLE_FLOW_OBJECTS = 1;
+
+	/**
+	 * The feature id for the '<em><b>Results</b></em>' containment reference list.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int EXECUTION_FLOW__RESULTS = 2;
+
+	/**
+	 * The feature id for the '<em><b>Flow Connections</b></em>' containment reference list.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int EXECUTION_FLOW__FLOW_CONNECTIONS = 3;
+
+	/**
+	 * The feature id for the '<em><b>Execution Flow Objects</b></em>' containment reference list.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int EXECUTION_FLOW__EXECUTION_FLOW_OBJECTS = 4;
+
+	/**
+	 * The feature id for the '<em><b>Start Point</b></em>' containment reference.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int EXECUTION_FLOW__START_POINT = 5;
+
+	/**
+	 * The feature id for the '<em><b>Start Point Connection</b></em>' containment reference.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int EXECUTION_FLOW__START_POINT_CONNECTION = 6;
+
+	/**
+	 * The number of structural features of the '<em>Execution Flow</em>' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int EXECUTION_FLOW_FEATURE_COUNT = 7;
+
+	/**
+	 * The meta object id for the '{@link com.csi.gmf.executionflow.impl.ExecutionFlowObjectImpl <em>Execution Flow Object</em>}' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see com.csi.gmf.executionflow.impl.ExecutionFlowObjectImpl
+	 * @see com.csi.gmf.executionflow.impl.ExecutionflowPackageImpl#getExecutionFlowObject()
+	 * @generated
+	 */
+	int EXECUTION_FLOW_OBJECT = 2;
+
+	/**
+	 * The feature id for the '<em><b>Path Key</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int EXECUTION_FLOW_OBJECT__PATH_KEY = SOURCE_CONNECTABLE__PATH_KEY;
+
+	/**
+	 * The feature id for the '<em><b>File Name</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int EXECUTION_FLOW_OBJECT__FILE_NAME = SOURCE_CONNECTABLE_FEATURE_COUNT + 0;
+
+	/**
+	 * The feature id for the '<em><b>Possible Results</b></em>' containment reference list.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int EXECUTION_FLOW_OBJECT__POSSIBLE_RESULTS = SOURCE_CONNECTABLE_FEATURE_COUNT + 1;
+
+	/**
+	 * The feature id for the '<em><b>File Path</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int EXECUTION_FLOW_OBJECT__FILE_PATH = SOURCE_CONNECTABLE_FEATURE_COUNT + 2;
+
+	/**
+	 * The number of structural features of the '<em>Execution Flow Object</em>' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int EXECUTION_FLOW_OBJECT_FEATURE_COUNT = SOURCE_CONNECTABLE_FEATURE_COUNT + 3;
+
+	/**
+	 * The meta object id for the '{@link com.csi.gmf.executionflow.impl.ExecutionFlowResultImpl <em>Execution Flow Result</em>}' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see com.csi.gmf.executionflow.impl.ExecutionFlowResultImpl
+	 * @see com.csi.gmf.executionflow.impl.ExecutionflowPackageImpl#getExecutionFlowResult()
+	 * @generated
+	 */
+	int EXECUTION_FLOW_RESULT = 3;
+
+	/**
+	 * The feature id for the '<em><b>Path Key</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int EXECUTION_FLOW_RESULT__PATH_KEY = FLOW_OBJECT__PATH_KEY;
+
+	/**
+	 * The feature id for the '<em><b>Execution Flow Result Value</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int EXECUTION_FLOW_RESULT__EXECUTION_FLOW_RESULT_VALUE = FLOW_OBJECT_FEATURE_COUNT + 0;
+
+	/**
+	 * The number of structural features of the '<em>Execution Flow Result</em>' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int EXECUTION_FLOW_RESULT_FEATURE_COUNT = FLOW_OBJECT_FEATURE_COUNT + 1;
+
+	/**
+	 * The meta object id for the '{@link com.csi.gmf.executionflow.impl.FlowObjectConnectionImpl <em>Flow Object Connection</em>}' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see com.csi.gmf.executionflow.impl.FlowObjectConnectionImpl
+	 * @see com.csi.gmf.executionflow.impl.ExecutionflowPackageImpl#getFlowObjectConnection()
+	 * @generated
+	 */
+	int FLOW_OBJECT_CONNECTION = 5;
+
+	/**
+	 * The feature id for the '<em><b>Source Path Key</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int FLOW_OBJECT_CONNECTION__SOURCE_PATH_KEY = 0;
+
+	/**
+	 * The feature id for the '<em><b>Destination Path Key</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int FLOW_OBJECT_CONNECTION__DESTINATION_PATH_KEY = 1;
+
+	/**
+	 * The feature id for the '<em><b>Execution Flow Result Value</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int FLOW_OBJECT_CONNECTION__EXECUTION_FLOW_RESULT_VALUE = 2;
+
+	/**
+	 * The feature id for the '<em><b>Source Object</b></em>' reference.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int FLOW_OBJECT_CONNECTION__SOURCE_OBJECT = 3;
+
+	/**
+	 * The feature id for the '<em><b>Destination Object</b></em>' reference.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int FLOW_OBJECT_CONNECTION__DESTINATION_OBJECT = 4;
+
+	/**
+	 * The feature id for the '<em><b>Source Results</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int FLOW_OBJECT_CONNECTION__SOURCE_RESULTS = 5;
+
+	/**
+	 * The number of structural features of the '<em>Flow Object Connection</em>' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int FLOW_OBJECT_CONNECTION_FEATURE_COUNT = 6;
+
+
+	/**
+	 * The meta object id for the '{@link com.csi.gmf.executionflow.impl.ExecutionResultImpl <em>Execution Result</em>}' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see com.csi.gmf.executionflow.impl.ExecutionResultImpl
+	 * @see com.csi.gmf.executionflow.impl.ExecutionflowPackageImpl#getExecutionResult()
+	 * @generated
+	 */
+	int EXECUTION_RESULT = 7;
+
+	/**
+	 * The feature id for the '<em><b>Value</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int EXECUTION_RESULT__VALUE = 0;
+
+	/**
+	 * The number of structural features of the '<em>Execution Result</em>' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int EXECUTION_RESULT_FEATURE_COUNT = 1;
+
+
+	/**
+	 * The meta object id for the '{@link com.csi.gmf.executionflow.impl.StartPointImpl <em>Start Point</em>}' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see com.csi.gmf.executionflow.impl.StartPointImpl
+	 * @see com.csi.gmf.executionflow.impl.ExecutionflowPackageImpl#getStartPoint()
+	 * @generated
+	 */
+	int START_POINT = 8;
+
+	/**
+	 * The feature id for the '<em><b>Path Key</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int START_POINT__PATH_KEY = FLOW_OBJECT__PATH_KEY;
+
+	/**
+	 * The number of structural features of the '<em>Start Point</em>' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int START_POINT_FEATURE_COUNT = FLOW_OBJECT_FEATURE_COUNT + 0;
+
+	/**
+	 * The meta object id for the '{@link com.csi.gmf.executionflow.impl.StartPointConnectionImpl <em>Start Point Connection</em>}' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see com.csi.gmf.executionflow.impl.StartPointConnectionImpl
+	 * @see com.csi.gmf.executionflow.impl.ExecutionflowPackageImpl#getStartPointConnection()
+	 * @generated
+	 */
+	int START_POINT_CONNECTION = 9;
+
+	/**
+	 * The feature id for the '<em><b>Start Point</b></em>' reference.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int START_POINT_CONNECTION__START_POINT = 0;
+
+	/**
+	 * The feature id for the '<em><b>Destination Object</b></em>' reference.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int START_POINT_CONNECTION__DESTINATION_OBJECT = 1;
+
+	/**
+	 * The number of structural features of the '<em>Start Point Connection</em>' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int START_POINT_CONNECTION_FEATURE_COUNT = 2;
+
+	/**
+	 * The meta object id for the '<em>Enumeration</em>' data type.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see java.util.Enumeration
+	 * @see com.csi.gmf.executionflow.impl.ExecutionflowPackageImpl#getEnumeration()
+	 * @generated
+	 */
+	int ENUMERATION = 10;
+
+
+	/**
+	 * Returns the meta object for class '{@link com.csi.gmf.executionflow.ExecutableFlowObject <em>Executable Flow Object</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for class '<em>Executable Flow Object</em>'.
+	 * @see com.csi.gmf.executionflow.ExecutableFlowObject
+	 * @generated
+	 */
+	EClass getExecutableFlowObject();
+
+	/**
+	 * Returns the meta object for the attribute '{@link com.csi.gmf.executionflow.ExecutableFlowObject#getClassName <em>Class Name</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Class Name</em>'.
+	 * @see com.csi.gmf.executionflow.ExecutableFlowObject#getClassName()
+	 * @see #getExecutableFlowObject()
+	 * @generated
+	 */
+	EAttribute getExecutableFlowObject_ClassName();
+
+	/**
+	 * Returns the meta object for the attribute '{@link com.csi.gmf.executionflow.ExecutableFlowObject#getSimpleClassName <em>Simple Class Name</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Simple Class Name</em>'.
+	 * @see com.csi.gmf.executionflow.ExecutableFlowObject#getSimpleClassName()
+	 * @see #getExecutableFlowObject()
+	 * @generated
+	 */
+	EAttribute getExecutableFlowObject_SimpleClassName();
+
+	/**
+	 * Returns the meta object for class '{@link com.csi.gmf.executionflow.ExecutionFlow <em>Execution Flow</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for class '<em>Execution Flow</em>'.
+	 * @see com.csi.gmf.executionflow.ExecutionFlow
+	 * @generated
+	 */
+	EClass getExecutionFlow();
+
+	/**
+	 * Returns the meta object for the attribute '{@link com.csi.gmf.executionflow.ExecutionFlow#getTitle <em>Title</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Title</em>'.
+	 * @see com.csi.gmf.executionflow.ExecutionFlow#getTitle()
+	 * @see #getExecutionFlow()
+	 * @generated
+	 */
+	EAttribute getExecutionFlow_Title();
+
+	/**
+	 * Returns the meta object for the containment reference list '{@link com.csi.gmf.executionflow.ExecutionFlow#getExecutableFlowObjects <em>Executable Flow Objects</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the containment reference list '<em>Executable Flow Objects</em>'.
+	 * @see com.csi.gmf.executionflow.ExecutionFlow#getExecutableFlowObjects()
+	 * @see #getExecutionFlow()
+	 * @generated
+	 */
+	EReference getExecutionFlow_ExecutableFlowObjects();
+
+	/**
+	 * Returns the meta object for the containment reference list '{@link com.csi.gmf.executionflow.ExecutionFlow#getResults <em>Results</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the containment reference list '<em>Results</em>'.
+	 * @see com.csi.gmf.executionflow.ExecutionFlow#getResults()
+	 * @see #getExecutionFlow()
+	 * @generated
+	 */
+	EReference getExecutionFlow_Results();
+
+	/**
+	 * Returns the meta object for the containment reference list '{@link com.csi.gmf.executionflow.ExecutionFlow#getFlowConnections <em>Flow Connections</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the containment reference list '<em>Flow Connections</em>'.
+	 * @see com.csi.gmf.executionflow.ExecutionFlow#getFlowConnections()
+	 * @see #getExecutionFlow()
+	 * @generated
+	 */
+	EReference getExecutionFlow_FlowConnections();
+
+	/**
+	 * Returns the meta object for the containment reference list '{@link com.csi.gmf.executionflow.ExecutionFlow#getExecutionFlowObjects <em>Execution Flow Objects</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the containment reference list '<em>Execution Flow Objects</em>'.
+	 * @see com.csi.gmf.executionflow.ExecutionFlow#getExecutionFlowObjects()
+	 * @see #getExecutionFlow()
+	 * @generated
+	 */
+	EReference getExecutionFlow_ExecutionFlowObjects();
+
+	/**
+	 * Returns the meta object for the containment reference '{@link com.csi.gmf.executionflow.ExecutionFlow#getStartPoint <em>Start Point</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the containment reference '<em>Start Point</em>'.
+	 * @see com.csi.gmf.executionflow.ExecutionFlow#getStartPoint()
+	 * @see #getExecutionFlow()
+	 * @generated
+	 */
+	EReference getExecutionFlow_StartPoint();
+
+	/**
+	 * Returns the meta object for the containment reference '{@link com.csi.gmf.executionflow.ExecutionFlow#getStartPointConnection <em>Start Point Connection</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the containment reference '<em>Start Point Connection</em>'.
+	 * @see com.csi.gmf.executionflow.ExecutionFlow#getStartPointConnection()
+	 * @see #getExecutionFlow()
+	 * @generated
+	 */
+	EReference getExecutionFlow_StartPointConnection();
+
+	/**
+	 * Returns the meta object for class '{@link com.csi.gmf.executionflow.ExecutionFlowObject <em>Execution Flow Object</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for class '<em>Execution Flow Object</em>'.
+	 * @see com.csi.gmf.executionflow.ExecutionFlowObject
+	 * @generated
+	 */
+	EClass getExecutionFlowObject();
+
+	/**
+	 * Returns the meta object for the attribute '{@link com.csi.gmf.executionflow.ExecutionFlowObject#getFileName <em>File Name</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>File Name</em>'.
+	 * @see com.csi.gmf.executionflow.ExecutionFlowObject#getFileName()
+	 * @see #getExecutionFlowObject()
+	 * @generated
+	 */
+	EAttribute getExecutionFlowObject_FileName();
+
+	/**
+	 * Returns the meta object for the containment reference list '{@link com.csi.gmf.executionflow.ExecutionFlowObject#getPossibleResults <em>Possible Results</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the containment reference list '<em>Possible Results</em>'.
+	 * @see com.csi.gmf.executionflow.ExecutionFlowObject#getPossibleResults()
+	 * @see #getExecutionFlowObject()
+	 * @generated
+	 */
+	EReference getExecutionFlowObject_PossibleResults();
+
+	/**
+	 * Returns the meta object for the attribute '{@link com.csi.gmf.executionflow.ExecutionFlowObject#getFilePath <em>File Path</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>File Path</em>'.
+	 * @see com.csi.gmf.executionflow.ExecutionFlowObject#getFilePath()
+	 * @see #getExecutionFlowObject()
+	 * @generated
+	 */
+	EAttribute getExecutionFlowObject_FilePath();
+
+	/**
+	 * Returns the meta object for class '{@link com.csi.gmf.executionflow.ExecutionFlowResult <em>Execution Flow Result</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for class '<em>Execution Flow Result</em>'.
+	 * @see com.csi.gmf.executionflow.ExecutionFlowResult
+	 * @generated
+	 */
+	EClass getExecutionFlowResult();
+
+	/**
+	 * Returns the meta object for the attribute '{@link com.csi.gmf.executionflow.ExecutionFlowResult#getExecutionFlowResultValue <em>Execution Flow Result Value</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Execution Flow Result Value</em>'.
+	 * @see com.csi.gmf.executionflow.ExecutionFlowResult#getExecutionFlowResultValue()
+	 * @see #getExecutionFlowResult()
+	 * @generated
+	 */
+	EAttribute getExecutionFlowResult_ExecutionFlowResultValue();
+
+	/**
+	 * Returns the meta object for class '{@link com.csi.gmf.executionflow.FlowObject <em>Flow Object</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for class '<em>Flow Object</em>'.
+	 * @see com.csi.gmf.executionflow.FlowObject
+	 * @generated
+	 */
+	EClass getFlowObject();
+
+	/**
+	 * Returns the meta object for the attribute '{@link com.csi.gmf.executionflow.FlowObject#getPathKey <em>Path Key</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Path Key</em>'.
+	 * @see com.csi.gmf.executionflow.FlowObject#getPathKey()
+	 * @see #getFlowObject()
+	 * @generated
+	 */
+	EAttribute getFlowObject_PathKey();
+
+	/**
+	 * Returns the meta object for class '{@link com.csi.gmf.executionflow.FlowObjectConnection <em>Flow Object Connection</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for class '<em>Flow Object Connection</em>'.
+	 * @see com.csi.gmf.executionflow.FlowObjectConnection
+	 * @generated
+	 */
+	EClass getFlowObjectConnection();
+
+	/**
+	 * Returns the meta object for the attribute '{@link com.csi.gmf.executionflow.FlowObjectConnection#getSourcePathKey <em>Source Path Key</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Source Path Key</em>'.
+	 * @see com.csi.gmf.executionflow.FlowObjectConnection#getSourcePathKey()
+	 * @see #getFlowObjectConnection()
+	 * @generated
+	 */
+	EAttribute getFlowObjectConnection_SourcePathKey();
+
+	/**
+	 * Returns the meta object for the attribute '{@link com.csi.gmf.executionflow.FlowObjectConnection#getDestinationPathKey <em>Destination Path Key</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Destination Path Key</em>'.
+	 * @see com.csi.gmf.executionflow.FlowObjectConnection#getDestinationPathKey()
+	 * @see #getFlowObjectConnection()
+	 * @generated
+	 */
+	EAttribute getFlowObjectConnection_DestinationPathKey();
+
+	/**
+	 * Returns the meta object for the attribute '{@link com.csi.gmf.executionflow.FlowObjectConnection#getExecutionFlowResultValue <em>Execution Flow Result Value</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Execution Flow Result Value</em>'.
+	 * @see com.csi.gmf.executionflow.FlowObjectConnection#getExecutionFlowResultValue()
+	 * @see #getFlowObjectConnection()
+	 * @generated
+	 */
+	EAttribute getFlowObjectConnection_ExecutionFlowResultValue();
+
+	/**
+	 * Returns the meta object for the reference '{@link com.csi.gmf.executionflow.FlowObjectConnection#getSourceObject <em>Source Object</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the reference '<em>Source Object</em>'.
+	 * @see com.csi.gmf.executionflow.FlowObjectConnection#getSourceObject()
+	 * @see #getFlowObjectConnection()
+	 * @generated
+	 */
+	EReference getFlowObjectConnection_SourceObject();
+
+	/**
+	 * Returns the meta object for the reference '{@link com.csi.gmf.executionflow.FlowObjectConnection#getDestinationObject <em>Destination Object</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the reference '<em>Destination Object</em>'.
+	 * @see com.csi.gmf.executionflow.FlowObjectConnection#getDestinationObject()
+	 * @see #getFlowObjectConnection()
+	 * @generated
+	 */
+	EReference getFlowObjectConnection_DestinationObject();
+
+	/**
+	 * Returns the meta object for the attribute '{@link com.csi.gmf.executionflow.FlowObjectConnection#getSourceResults <em>Source Results</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Source Results</em>'.
+	 * @see com.csi.gmf.executionflow.FlowObjectConnection#getSourceResults()
+	 * @see #getFlowObjectConnection()
+	 * @generated
+	 */
+	EAttribute getFlowObjectConnection_SourceResults();
+
+	/**
+	 * Returns the meta object for class '{@link com.csi.gmf.executionflow.SourceConnectable <em>Source Connectable</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for class '<em>Source Connectable</em>'.
+	 * @see com.csi.gmf.executionflow.SourceConnectable
+	 * @generated
+	 */
+	EClass getSourceConnectable();
+
+	/**
+	 * Returns the meta object for class '{@link com.csi.gmf.executionflow.ExecutionResult <em>Execution Result</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for class '<em>Execution Result</em>'.
+	 * @see com.csi.gmf.executionflow.ExecutionResult
+	 * @generated
+	 */
+	EClass getExecutionResult();
+
+	/**
+	 * Returns the meta object for the attribute '{@link com.csi.gmf.executionflow.ExecutionResult#getValue <em>Value</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Value</em>'.
+	 * @see com.csi.gmf.executionflow.ExecutionResult#getValue()
+	 * @see #getExecutionResult()
+	 * @generated
+	 */
+	EAttribute getExecutionResult_Value();
+
+	/**
+	 * Returns the meta object for class '{@link com.csi.gmf.executionflow.StartPoint <em>Start Point</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for class '<em>Start Point</em>'.
+	 * @see com.csi.gmf.executionflow.StartPoint
+	 * @generated
+	 */
+	EClass getStartPoint();
+
+	/**
+	 * Returns the meta object for class '{@link com.csi.gmf.executionflow.StartPointConnection <em>Start Point Connection</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for class '<em>Start Point Connection</em>'.
+	 * @see com.csi.gmf.executionflow.StartPointConnection
+	 * @generated
+	 */
+	EClass getStartPointConnection();
+
+	/**
+	 * Returns the meta object for the reference '{@link com.csi.gmf.executionflow.StartPointConnection#getStartPoint <em>Start Point</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the reference '<em>Start Point</em>'.
+	 * @see com.csi.gmf.executionflow.StartPointConnection#getStartPoint()
+	 * @see #getStartPointConnection()
+	 * @generated
+	 */
+	EReference getStartPointConnection_StartPoint();
+
+	/**
+	 * Returns the meta object for the reference '{@link com.csi.gmf.executionflow.StartPointConnection#getDestinationObject <em>Destination Object</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the reference '<em>Destination Object</em>'.
+	 * @see com.csi.gmf.executionflow.StartPointConnection#getDestinationObject()
+	 * @see #getStartPointConnection()
+	 * @generated
+	 */
+	EReference getStartPointConnection_DestinationObject();
+
+	/**
+	 * Returns the meta object for data type '{@link java.util.Enumeration <em>Enumeration</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for data type '<em>Enumeration</em>'.
+	 * @see java.util.Enumeration
+	 * @model instanceClass="java.util.Enumeration"
+	 * @generated
+	 */
+	EDataType getEnumeration();
+
+	/**
+	 * Returns the factory that creates the instances of the model.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the factory that creates the instances of the model.
+	 * @generated
+	 */
+	ExecutionflowFactory getExecutionflowFactory();
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * Defines literals for the meta objects that represent
+	 * <ul>
+	 *   <li>each class,</li>
+	 *   <li>each feature of each class,</li>
+	 *   <li>each enum,</li>
+	 *   <li>and each data type</li>
+	 * </ul>
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	interface Literals  {
+		/**
+		 * The meta object literal for the '{@link com.csi.gmf.executionflow.impl.ExecutableFlowObjectImpl <em>Executable Flow Object</em>}' class.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @see com.csi.gmf.executionflow.impl.ExecutableFlowObjectImpl
+		 * @see com.csi.gmf.executionflow.impl.ExecutionflowPackageImpl#getExecutableFlowObject()
+		 * @generated
+		 */
+		EClass EXECUTABLE_FLOW_OBJECT = eINSTANCE.getExecutableFlowObject();
+
+		/**
+		 * The meta object literal for the '<em><b>Class Name</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute EXECUTABLE_FLOW_OBJECT__CLASS_NAME = eINSTANCE.getExecutableFlowObject_ClassName();
+
+		/**
+		 * The meta object literal for the '<em><b>Simple Class Name</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute EXECUTABLE_FLOW_OBJECT__SIMPLE_CLASS_NAME = eINSTANCE.getExecutableFlowObject_SimpleClassName();
+
+		/**
+		 * The meta object literal for the '{@link com.csi.gmf.executionflow.impl.ExecutionFlowImpl <em>Execution Flow</em>}' class.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @see com.csi.gmf.executionflow.impl.ExecutionFlowImpl
+		 * @see com.csi.gmf.executionflow.impl.ExecutionflowPackageImpl#getExecutionFlow()
+		 * @generated
+		 */
+		EClass EXECUTION_FLOW = eINSTANCE.getExecutionFlow();
+
+		/**
+		 * The meta object literal for the '<em><b>Title</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute EXECUTION_FLOW__TITLE = eINSTANCE.getExecutionFlow_Title();
+
+		/**
+		 * The meta object literal for the '<em><b>Executable Flow Objects</b></em>' containment reference list feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EReference EXECUTION_FLOW__EXECUTABLE_FLOW_OBJECTS = eINSTANCE.getExecutionFlow_ExecutableFlowObjects();
+
+		/**
+		 * The meta object literal for the '<em><b>Results</b></em>' containment reference list feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EReference EXECUTION_FLOW__RESULTS = eINSTANCE.getExecutionFlow_Results();
+
+		/**
+		 * The meta object literal for the '<em><b>Flow Connections</b></em>' containment reference list feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EReference EXECUTION_FLOW__FLOW_CONNECTIONS = eINSTANCE.getExecutionFlow_FlowConnections();
+
+		/**
+		 * The meta object literal for the '<em><b>Execution Flow Objects</b></em>' containment reference list feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EReference EXECUTION_FLOW__EXECUTION_FLOW_OBJECTS = eINSTANCE.getExecutionFlow_ExecutionFlowObjects();
+
+		/**
+		 * The meta object literal for the '<em><b>Start Point</b></em>' containment reference feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EReference EXECUTION_FLOW__START_POINT = eINSTANCE.getExecutionFlow_StartPoint();
+
+		/**
+		 * The meta object literal for the '<em><b>Start Point Connection</b></em>' containment reference feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EReference EXECUTION_FLOW__START_POINT_CONNECTION = eINSTANCE.getExecutionFlow_StartPointConnection();
+
+		/**
+		 * The meta object literal for the '{@link com.csi.gmf.executionflow.impl.ExecutionFlowObjectImpl <em>Execution Flow Object</em>}' class.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @see com.csi.gmf.executionflow.impl.ExecutionFlowObjectImpl
+		 * @see com.csi.gmf.executionflow.impl.ExecutionflowPackageImpl#getExecutionFlowObject()
+		 * @generated
+		 */
+		EClass EXECUTION_FLOW_OBJECT = eINSTANCE.getExecutionFlowObject();
+
+		/**
+		 * The meta object literal for the '<em><b>File Name</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute EXECUTION_FLOW_OBJECT__FILE_NAME = eINSTANCE.getExecutionFlowObject_FileName();
+
+		/**
+		 * The meta object literal for the '<em><b>Possible Results</b></em>' containment reference list feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EReference EXECUTION_FLOW_OBJECT__POSSIBLE_RESULTS = eINSTANCE.getExecutionFlowObject_PossibleResults();
+
+		/**
+		 * The meta object literal for the '<em><b>File Path</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute EXECUTION_FLOW_OBJECT__FILE_PATH = eINSTANCE.getExecutionFlowObject_FilePath();
+
+		/**
+		 * The meta object literal for the '{@link com.csi.gmf.executionflow.impl.ExecutionFlowResultImpl <em>Execution Flow Result</em>}' class.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @see com.csi.gmf.executionflow.impl.ExecutionFlowResultImpl
+		 * @see com.csi.gmf.executionflow.impl.ExecutionflowPackageImpl#getExecutionFlowResult()
+		 * @generated
+		 */
+		EClass EXECUTION_FLOW_RESULT = eINSTANCE.getExecutionFlowResult();
+
+		/**
+		 * The meta object literal for the '<em><b>Execution Flow Result Value</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute EXECUTION_FLOW_RESULT__EXECUTION_FLOW_RESULT_VALUE = eINSTANCE.getExecutionFlowResult_ExecutionFlowResultValue();
+
+		/**
+		 * The meta object literal for the '{@link com.csi.gmf.executionflow.impl.FlowObjectImpl <em>Flow Object</em>}' class.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @see com.csi.gmf.executionflow.impl.FlowObjectImpl
+		 * @see com.csi.gmf.executionflow.impl.ExecutionflowPackageImpl#getFlowObject()
+		 * @generated
+		 */
+		EClass FLOW_OBJECT = eINSTANCE.getFlowObject();
+
+		/**
+		 * The meta object literal for the '<em><b>Path Key</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute FLOW_OBJECT__PATH_KEY = eINSTANCE.getFlowObject_PathKey();
+
+		/**
+		 * The meta object literal for the '{@link com.csi.gmf.executionflow.impl.FlowObjectConnectionImpl <em>Flow Object Connection</em>}' class.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @see com.csi.gmf.executionflow.impl.FlowObjectConnectionImpl
+		 * @see com.csi.gmf.executionflow.impl.ExecutionflowPackageImpl#getFlowObjectConnection()
+		 * @generated
+		 */
+		EClass FLOW_OBJECT_CONNECTION = eINSTANCE.getFlowObjectConnection();
+
+		/**
+		 * The meta object literal for the '<em><b>Source Path Key</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute FLOW_OBJECT_CONNECTION__SOURCE_PATH_KEY = eINSTANCE.getFlowObjectConnection_SourcePathKey();
+
+		/**
+		 * The meta object literal for the '<em><b>Destination Path Key</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute FLOW_OBJECT_CONNECTION__DESTINATION_PATH_KEY = eINSTANCE.getFlowObjectConnection_DestinationPathKey();
+
+		/**
+		 * The meta object literal for the '<em><b>Execution Flow Result Value</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute FLOW_OBJECT_CONNECTION__EXECUTION_FLOW_RESULT_VALUE = eINSTANCE.getFlowObjectConnection_ExecutionFlowResultValue();
+
+		/**
+		 * The meta object literal for the '<em><b>Source Object</b></em>' reference feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EReference FLOW_OBJECT_CONNECTION__SOURCE_OBJECT = eINSTANCE.getFlowObjectConnection_SourceObject();
+
+		/**
+		 * The meta object literal for the '<em><b>Destination Object</b></em>' reference feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EReference FLOW_OBJECT_CONNECTION__DESTINATION_OBJECT = eINSTANCE.getFlowObjectConnection_DestinationObject();
+
+		/**
+		 * The meta object literal for the '<em><b>Source Results</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute FLOW_OBJECT_CONNECTION__SOURCE_RESULTS = eINSTANCE.getFlowObjectConnection_SourceResults();
+
+		/**
+		 * The meta object literal for the '{@link com.csi.gmf.executionflow.impl.SourceConnectableImpl <em>Source Connectable</em>}' class.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @see com.csi.gmf.executionflow.impl.SourceConnectableImpl
+		 * @see com.csi.gmf.executionflow.impl.ExecutionflowPackageImpl#getSourceConnectable()
+		 * @generated
+		 */
+		EClass SOURCE_CONNECTABLE = eINSTANCE.getSourceConnectable();
+
+		/**
+		 * The meta object literal for the '{@link com.csi.gmf.executionflow.impl.ExecutionResultImpl <em>Execution Result</em>}' class.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @see com.csi.gmf.executionflow.impl.ExecutionResultImpl
+		 * @see com.csi.gmf.executionflow.impl.ExecutionflowPackageImpl#getExecutionResult()
+		 * @generated
+		 */
+		EClass EXECUTION_RESULT = eINSTANCE.getExecutionResult();
+
+		/**
+		 * The meta object literal for the '<em><b>Value</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute EXECUTION_RESULT__VALUE = eINSTANCE.getExecutionResult_Value();
+
+		/**
+		 * The meta object literal for the '{@link com.csi.gmf.executionflow.impl.StartPointImpl <em>Start Point</em>}' class.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @see com.csi.gmf.executionflow.impl.StartPointImpl
+		 * @see com.csi.gmf.executionflow.impl.ExecutionflowPackageImpl#getStartPoint()
+		 * @generated
+		 */
+		EClass START_POINT = eINSTANCE.getStartPoint();
+
+		/**
+		 * The meta object literal for the '{@link com.csi.gmf.executionflow.impl.StartPointConnectionImpl <em>Start Point Connection</em>}' class.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @see com.csi.gmf.executionflow.impl.StartPointConnectionImpl
+		 * @see com.csi.gmf.executionflow.impl.ExecutionflowPackageImpl#getStartPointConnection()
+		 * @generated
+		 */
+		EClass START_POINT_CONNECTION = eINSTANCE.getStartPointConnection();
+
+		/**
+		 * The meta object literal for the '<em><b>Start Point</b></em>' reference feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EReference START_POINT_CONNECTION__START_POINT = eINSTANCE.getStartPointConnection_StartPoint();
+
+		/**
+		 * The meta object literal for the '<em><b>Destination Object</b></em>' reference feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EReference START_POINT_CONNECTION__DESTINATION_OBJECT = eINSTANCE.getStartPointConnection_DestinationObject();
+
+		/**
+		 * The meta object literal for the '<em>Enumeration</em>' data type.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @see java.util.Enumeration
+		 * @see com.csi.gmf.executionflow.impl.ExecutionflowPackageImpl#getEnumeration()
+		 * @generated
+		 */
+		EDataType ENUMERATION = eINSTANCE.getEnumeration();
+
+	}
+
+} //ExecutionflowPackage

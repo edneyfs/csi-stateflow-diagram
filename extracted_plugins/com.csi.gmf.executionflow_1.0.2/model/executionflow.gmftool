@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gmftool:ToolRegistry xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:gmftool="http://www.eclipse.org/gmf/2005/ToolDefinition">
+  <palette>
+    <tools
+        xsi:type="gmftool:ToolGroup"
+        title="Flow Objects"
+        description="">
+      <tools
+          xsi:type="gmftool:CreationTool"
+          title="Start Point"
+          description="Creates a new start point">
+        <smallIcon
+            xsi:type="gmftool:DefaultImage"/>
+        <largeIcon
+            xsi:type="gmftool:DefaultImage"/>
+      </tools>
+      <tools
+          xsi:type="gmftool:CreationTool"
+          title="Executable Object"
+          description="Create new ExecutableFlowObject">
+        <smallIcon
+            xsi:type="gmftool:BundleImage"
+            path="icons/full/obj16/ExecutableFlowObject.gif"
+            bundle="com.csi.gmf.executionflow.edit"/>
+        <largeIcon
+            xsi:type="gmftool:DefaultImage"/>
+      </tools>
+      <tools
+          xsi:type="gmftool:CreationTool"
+          title="Flow Object"
+          description="Create new ExecutionFlowObject">
+        <smallIcon
+            xsi:type="gmftool:BundleImage"
+            path="icons/full/obj16/ExecutionFlowObject.gif"
+            bundle="com.csi.gmf.executionflow.edit"/>
+        <largeIcon
+            xsi:type="gmftool:DefaultImage"/>
+      </tools>
+      <tools
+          xsi:type="gmftool:CreationTool"
+          title="Flow Result"
+          description="Create new ExecutionFlowResult">
+        <smallIcon
+            xsi:type="gmftool:BundleImage"
+            path="icons/full/obj16/ExecutionFlowResult.gif"
+            bundle="com.csi.gmf.executionflow.edit"/>
+        <largeIcon
+            xsi:type="gmftool:DefaultImage"/>
+      </tools>
+    </tools>
+    <tools
+        xsi:type="gmftool:ToolGroup"
+        title="Connections">
+      <tools
+          xsi:type="gmftool:CreationTool"
+          title="Flow Link"
+          description="Create new FlowObjectConnection">
+        <smallIcon
+            xsi:type="gmftool:BundleImage"
+            path="icons/full/obj16/FlowObjectConnection.gif"
+            bundle="com.csi.gmf.executionflow.edit"/>
+        <largeIcon
+            xsi:type="gmftool:DefaultImage"/>
+      </tools>
+      <tools
+          xsi:type="gmftool:CreationTool"
+          title="Start Point Link"
+          description="Create new StartPointLink">
+        <smallIcon
+            xsi:type="gmftool:BundleImage"
+            path="icons/full/obj16/FlowObjectConnection.gif"
+            bundle="com.csi.gmf.executionflow.edit"/>
+        <largeIcon
+            xsi:type="gmftool:DefaultImage"/>
+      </tools>
+    </tools>
+  </palette>
+</gmftool:ToolRegistry>

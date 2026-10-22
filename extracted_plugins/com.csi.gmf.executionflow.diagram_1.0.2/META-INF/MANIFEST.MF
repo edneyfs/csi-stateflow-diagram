@@ -1,0 +1,42 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Execution flow diagram editor
+Bundle-SymbolicName: com.csi.gmf.executionflow.diagram; singleton:=tru
+ e
+Bundle-Version: 1.0.2
+Bundle-ClassPath: .
+Bundle-Activator: com.csi.gmf.executionflow.diagram.part.Executionflow
+ DiagramEditorPlugin
+Bundle-Vendor: CSI - Comercio Solucoes Inteligentes Ltda.
+Bundle-Localization: plugin
+Export-Package: com.csi.gmf.executionflow.diagram,com.csi.gmf.executio
+ nflow.diagram.edit.commands,com.csi.gmf.executionflow.diagram.edit.he
+ lpers,com.csi.gmf.executionflow.diagram.edit.parts,com.csi.gmf.execut
+ ionflow.diagram.edit.policies,com.csi.gmf.executionflow.diagram.expre
+ ssions,com.csi.gmf.executionflow.diagram.navigator,com.csi.gmf.execut
+ ionflow.diagram.parsers,com.csi.gmf.executionflow.diagram.part,com.cs
+ i.gmf.executionflow.diagram.preferences,com.csi.gmf.executionflow.dia
+ gram.providers,com.csi.gmf.executionflow.diagram.sheet,com.csi.gmf.ex
+ ecutionflow.diagram.view.factories
+Require-Bundle: org.eclipse.core.runtime,org.eclipse.core.resources,or
+ g.eclipse.jface,org.eclipse.ui.ide,org.eclipse.ui.views,org.eclipse.u
+ i.workbench,org.eclipse.ui.workbench.texteditor,org.eclipse.emf.ecore
+ ,org.eclipse.emf.ecore.xmi,org.eclipse.emf.edit.ui,org.eclipse.gef;vi
+ sibility:=reexport,org.eclipse.gmf.runtime.emf.core,org.eclipse.gmf.r
+ untime.emf.commands.core,org.eclipse.gmf.runtime.emf.ui.properties,or
+ g.eclipse.gmf.runtime.diagram.ui,org.eclipse.gmf.runtime.diagram.ui.p
+ rinting.render,org.eclipse.gmf.runtime.diagram.ui.printing,org.eclips
+ e.gmf.runtime.diagram.ui.providers,org.eclipse.gmf.runtime.diagram.ui
+ .providers.ide,org.eclipse.gmf.runtime.diagram.ui.render,org.eclipse.
+ gmf.runtime.diagram.ui.resources.editor,org.eclipse.gmf.runtime.diagr
+ am.ui.resources.editor.ide,org.eclipse.gmf.runtime.notation.providers
+ ,com.csi.gmf.executionflow;visibility:=reexport,com.csi.gmf.execution
+ flow.edit;visibility:=reexport,org.eclipse.emf.validation;visibility:
+ =reexport,org.eclipse.gmf.runtime.draw2d.ui;visibility:=reexport,org.
+ eclipse.draw2d;visibility:=reexport,org.eclipse.jdt.core;visibility:=
+ reexport,org.eclipse.jdt.ui;visibility:=reexport,org.eclipse.ui,org.e
+ clipse.search,org.eclipse.core.expressions,org.eclipse.ui.navigator,o
+ rg.eclipse.ui.navigator.resources,org.eclipse.gmf.runtime.diagram.ui.
+ properties,org.eclipse.ocl.ecore;visibility:=reexport
+Eclipse-LazyStart: true
+

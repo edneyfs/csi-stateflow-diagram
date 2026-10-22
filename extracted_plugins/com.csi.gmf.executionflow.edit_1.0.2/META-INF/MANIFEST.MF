@@ -1,0 +1,16 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Execution flow edit
+Bundle-SymbolicName: com.csi.gmf.executionflow.edit; singleton:=true
+Bundle-Version: 1.0.2
+Bundle-ClassPath: .
+Bundle-Activator: com.csi.gmf.executionflow.provider.ExecutionflowEdit
+ Plugin$Implementation
+Bundle-Vendor: CSI - Comercio Solucoes Inteligentes Ltda.
+Bundle-Localization: plugin
+Export-Package: com.csi.gmf.executionflow.provider
+Require-Bundle: org.eclipse.core.runtime,com.csi.gmf.executionflow;vis
+ ibility:=reexport,org.eclipse.emf.edit;visibility:=reexport,org.eclip
+ se.gmf.runtime.common.ui.services.properties
+Eclipse-LazyStart: true
+

@@ -1,0 +1,13 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Execution flow
+Bundle-SymbolicName: com.csi.gmf.executionflow; singleton:=true
+Bundle-Version: 1.0.2
+Bundle-ClassPath: .
+Bundle-Vendor: CSI - Comercio Solucoes Inteligentes Ltda.
+Bundle-Localization: plugin
+Export-Package: com.csi.gmf.executionflow,com.csi.gmf.executionflow.im
+ pl,com.csi.gmf.executionflow.util
+Require-Bundle: org.eclipse.core.runtime,org.eclipse.emf.ecore;visibil
+ ity:=reexport,org.eclipse.debug.core,org.eclipse.core.resources
+

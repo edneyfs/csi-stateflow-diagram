@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<genmodel:GenModel xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore"
+    xmlns:genmodel="http://www.eclipse.org/emf/2002/GenModel" modelDirectory="/com.csi.gmf.stateflow/src"
+    modelPluginID="com.csi.gmf.stateflow" modelName="Stateflow" importerID="org.eclipse.emf.importer.java"
+    language="">
+  <foreignModel>@model</foreignModel>
+  <genPackages prefix="Stateflow" basePackage="com.csi.gmf" disposableProviderFactory="true"
+      ecorePackage="stateflow.ecore#/">
+    <genClasses ecoreClass="stateflow.ecore#//ExecutionFlowObject">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute stateflow.ecore#//ExecutionFlowObject/filePath"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute stateflow.ecore#//ExecutionFlowObject/title"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute stateflow.ecore#//ExecutionFlowObject/id"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute stateflow.ecore#//ExecutionFlowObject/description"/>
+    </genClasses>
+    <genClasses ecoreClass="stateflow.ecore#//FlowObject">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute stateflow.ecore#//FlowObject/pathKey"/>
+    </genClasses>
+    <genClasses ecoreClass="stateflow.ecore#//FlowObjectConnection">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute stateflow.ecore#//FlowObjectConnection/sourcePathKey"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute stateflow.ecore#//FlowObjectConnection/destinationPathKey"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute stateflow.ecore#//FlowObjectConnection/executionFlowResultValue"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference stateflow.ecore#//FlowObjectConnection/sourceFlow"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference stateflow.ecore#//FlowObjectConnection/destinationState"/>
+    </genClasses>
+    <genClasses ecoreClass="stateflow.ecore#//State">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute stateflow.ecore#//State/id"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute stateflow.ecore#//State/description"/>
+    </genClasses>
+    <genClasses ecoreClass="stateflow.ecore#//StateFlow">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference stateflow.ecore#//StateFlow/states"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference stateflow.ecore#//StateFlow/executionFlows"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference stateflow.ecore#//StateFlow/stateConnections"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference stateflow.ecore#//StateFlow/flowConnections"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference stateflow.ecore#//StateFlow/startPoint"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference stateflow.ecore#//StateFlow/startPointConnection"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute stateflow.ecore#//StateFlow/id"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute stateflow.ecore#//StateFlow/description"/>
+      <genFeatures createChild="false" propertyCategory="" ecoreFeature="ecore:EAttribute stateflow.ecore#//StateFlow/persistent"/>
+    </genClasses>
+    <genClasses ecoreClass="stateflow.ecore#//EventConnection">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute stateflow.ecore#//EventConnection/sourcePathKey"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute stateflow.ecore#//EventConnection/destinationPathKey"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute stateflow.ecore#//EventConnection/eventID"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference stateflow.ecore#//EventConnection/sourceState"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference stateflow.ecore#//EventConnection/destinationFlow"/>
+    </genClasses>
+    <genClasses ecoreClass="stateflow.ecore#//StartPoint"/>
+    <genClasses ecoreClass="stateflow.ecore#//StartPointConnection">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference stateflow.ecore#//StartPointConnection/startPoint"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference stateflow.ecore#//StartPointConnection/destinationState"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute stateflow.ecore#//StartPointConnection/destinationStateId"/>
+    </genClasses>
+  </genPackages>
+</genmodel:GenModel>

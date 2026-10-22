@@ -1,0 +1,464 @@
+/**
+ * <copyright>
+ * </copyright>
+ *
+ * $Id$
+ */
+package com.csi.gmf.executionflow.impl;
+
+import com.csi.gmf.executionflow.ExecutableFlowObject;
+import com.csi.gmf.executionflow.ExecutionFlow;
+import com.csi.gmf.executionflow.ExecutionFlowObject;
+import com.csi.gmf.executionflow.ExecutionFlowResult;
+import com.csi.gmf.executionflow.ExecutionflowPackage;
+import com.csi.gmf.executionflow.FlowObjectConnection;
+
+import com.csi.gmf.executionflow.StartPoint;
+import com.csi.gmf.executionflow.StartPointConnection;
+
+import java.util.Collection;
+
+import org.eclipse.emf.common.notify.Notification;
+import org.eclipse.emf.common.notify.NotificationChain;
+
+import org.eclipse.emf.common.util.EList;
+
+import org.eclipse.emf.ecore.EClass;
+import org.eclipse.emf.ecore.InternalEObject;
+
+import org.eclipse.emf.ecore.impl.ENotificationImpl;
+import org.eclipse.emf.ecore.impl.EObjectImpl;
+
+import org.eclipse.emf.ecore.util.EObjectContainmentEList;
+import org.eclipse.emf.ecore.util.InternalEList;
+
+/**
+ * <!-- begin-user-doc -->
+ * An implementation of the model object '<em><b>Execution Flow</b></em>'.
+ * <!-- end-user-doc -->
+ * <p>
+ * The following features are implemented:
+ * <ul>
+ *   <li>{@link com.csi.gmf.executionflow.impl.ExecutionFlowImpl#getTitle <em>Title</em>}</li>
+ *   <li>{@link com.csi.gmf.executionflow.impl.ExecutionFlowImpl#getExecutableFlowObjects <em>Executable Flow Objects</em>}</li>
+ *   <li>{@link com.csi.gmf.executionflow.impl.ExecutionFlowImpl#getResults <em>Results</em>}</li>
+ *   <li>{@link com.csi.gmf.executionflow.impl.ExecutionFlowImpl#getFlowConnections <em>Flow Connections</em>}</li>
+ *   <li>{@link com.csi.gmf.executionflow.impl.ExecutionFlowImpl#getExecutionFlowObjects <em>Execution Flow Objects</em>}</li>
+ *   <li>{@link com.csi.gmf.executionflow.impl.ExecutionFlowImpl#getStartPoint <em>Start Point</em>}</li>
+ *   <li>{@link com.csi.gmf.executionflow.impl.ExecutionFlowImpl#getStartPointConnection <em>Start Point Connection</em>}</li>
+ * </ul>
+ * </p>
+ *
+ * @generated
+ */
+public class ExecutionFlowImpl extends EObjectImpl implements ExecutionFlow {
+	/**
+	 * The default value of the '{@link #getTitle() <em>Title</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #getTitle()
+	 * @generated
+	 * @ordered
+	 */
+	protected static final String TITLE_EDEFAULT = null;
+
+	/**
+	 * The cached value of the '{@link #getTitle() <em>Title</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #getTitle()
+	 * @generated
+	 * @ordered
+	 */
+	protected String title = TITLE_EDEFAULT;
+
+	/**
+	 * The cached value of the '{@link #getExecutableFlowObjects() <em>Executable Flow Objects</em>}' containment reference list.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #getExecutableFlowObjects()
+	 * @generated
+	 * @ordered
+	 */
+	protected EList executableFlowObjects = null;
+
+	/**
+	 * The cached value of the '{@link #getResults() <em>Results</em>}' containment reference list.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #getResults()
+	 * @generated
+	 * @ordered
+	 */
+	protected EList results = null;
+
+	/**
+	 * The cached value of the '{@link #getFlowConnections() <em>Flow Connections</em>}' containment reference list.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #getFlowConnections()
+	 * @generated
+	 * @ordered
+	 */
+	protected EList flowConnections = null;
+
+	/**
+	 * The cached value of the '{@link #getExecutionFlowObjects() <em>Execution Flow Objects</em>}' containment reference list.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #getExecutionFlowObjects()
+	 * @generated
+	 * @ordered
+	 */
+	protected EList executionFlowObjects = null;
+
+	/**
+	 * The cached value of the '{@link #getStartPoint() <em>Start Point</em>}' containment reference.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #getStartPoint()
+	 * @generated
+	 * @ordered
+	 */
+	protected StartPoint startPoint = null;
+
+	/**
+	 * The cached value of the '{@link #getStartPointConnection() <em>Start Point Connection</em>}' containment reference.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #getStartPointConnection()
+	 * @generated
+	 * @ordered
+	 */
+	protected StartPointConnection startPointConnection = null;
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	protected ExecutionFlowImpl() {
+		super();
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	protected EClass eStaticClass() {
+		return ExecutionflowPackage.Literals.EXECUTION_FLOW;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public String getTitle() {
+		return title;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public void setTitle(String newTitle) {
+		String oldTitle = title;
+		title = newTitle;
+		if (eNotificationRequired())
+			eNotify(new ENotificationImpl(this, Notification.SET, ExecutionflowPackage.EXECUTION_FLOW__TITLE, oldTitle, title));
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EList getExecutableFlowObjects() {
+		if (executableFlowObjects == null) {
+			executableFlowObjects = new EObjectContainmentEList(ExecutableFlowObject.class, this, ExecutionflowPackage.EXECUTION_FLOW__EXECUTABLE_FLOW_OBJECTS);
+		}
+		return executableFlowObjects;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EList getResults() {
+		if (results == null) {
+			results = new EObjectContainmentEList(ExecutionFlowResult.class, this, ExecutionflowPackage.EXECUTION_FLOW__RESULTS);
+		}
+		return results;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EList getFlowConnections() {
+		if (flowConnections == null) {
+			flowConnections = new EObjectContainmentEList(FlowObjectConnection.class, this, ExecutionflowPackage.EXECUTION_FLOW__FLOW_CONNECTIONS);
+		}
+		return flowConnections;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EList getExecutionFlowObjects() {
+		if (executionFlowObjects == null) {
+			executionFlowObjects = new EObjectContainmentEList(ExecutionFlowObject.class, this, ExecutionflowPackage.EXECUTION_FLOW__EXECUTION_FLOW_OBJECTS);
+		}
+		return executionFlowObjects;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public StartPoint getStartPoint() {
+		return startPoint;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public NotificationChain basicSetStartPoint(StartPoint newStartPoint, NotificationChain msgs) {
+		StartPoint oldStartPoint = startPoint;
+		startPoint = newStartPoint;
+		if (eNotificationRequired()) {
+			ENotificationImpl notification = new ENotificationImpl(this, Notification.SET, ExecutionflowPackage.EXECUTION_FLOW__START_POINT, oldStartPoint, newStartPoint);
+			if (msgs == null) msgs = notification; else msgs.add(notification);
+		}
+		return msgs;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public void setStartPoint(StartPoint newStartPoint) {
+		if (newStartPoint != startPoint) {
+			NotificationChain msgs = null;
+			if (startPoint != null)
+				msgs = ((InternalEObject)startPoint).eInverseRemove(this, EOPPOSITE_FEATURE_BASE - ExecutionflowPackage.EXECUTION_FLOW__START_POINT, null, msgs);
+			if (newStartPoint != null)
+				msgs = ((InternalEObject)newStartPoint).eInverseAdd(this, EOPPOSITE_FEATURE_BASE - ExecutionflowPackage.EXECUTION_FLOW__START_POINT, null, msgs);
+			msgs = basicSetStartPoint(newStartPoint, msgs);
+			if (msgs != null) msgs.dispatch();
+		}
+		else if (eNotificationRequired())
+			eNotify(new ENotificationImpl(this, Notification.SET, ExecutionflowPackage.EXECUTION_FLOW__START_POINT, newStartPoint, newStartPoint));
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public StartPointConnection getStartPointConnection() {
+		return startPointConnection;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public NotificationChain basicSetStartPointConnection(StartPointConnection newStartPointConnection, NotificationChain msgs) {
+		StartPointConnection oldStartPointConnection = startPointConnection;
+		startPointConnection = newStartPointConnection;
+		if (eNotificationRequired()) {
+			ENotificationImpl notification = new ENotificationImpl(this, Notification.SET, ExecutionflowPackage.EXECUTION_FLOW__START_POINT_CONNECTION, oldStartPointConnection, newStartPointConnection);
+			if (msgs == null) msgs = notification; else msgs.add(notification);
+		}
+		return msgs;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public void setStartPointConnection(StartPointConnection newStartPointConnection) {
+		if (newStartPointConnection != startPointConnection) {
+			NotificationChain msgs = null;
+			if (startPointConnection != null)
+				msgs = ((InternalEObject)startPointConnection).eInverseRemove(this, EOPPOSITE_FEATURE_BASE - ExecutionflowPackage.EXECUTION_FLOW__START_POINT_CONNECTION, null, msgs);
+			if (newStartPointConnection != null)
+				msgs = ((InternalEObject)newStartPointConnection).eInverseAdd(this, EOPPOSITE_FEATURE_BASE - ExecutionflowPackage.EXECUTION_FLOW__START_POINT_CONNECTION, null, msgs);
+			msgs = basicSetStartPointConnection(newStartPointConnection, msgs);
+			if (msgs != null) msgs.dispatch();
+		}
+		else if (eNotificationRequired())
+			eNotify(new ENotificationImpl(this, Notification.SET, ExecutionflowPackage.EXECUTION_FLOW__START_POINT_CONNECTION, newStartPointConnection, newStartPointConnection));
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public NotificationChain eInverseRemove(InternalEObject otherEnd, int featureID, NotificationChain msgs) {
+		switch (featureID) {
+			case ExecutionflowPackage.EXECUTION_FLOW__EXECUTABLE_FLOW_OBJECTS:
+				return ((InternalEList)getExecutableFlowObjects()).basicRemove(otherEnd, msgs);
+			case ExecutionflowPackage.EXECUTION_FLOW__RESULTS:
+				return ((InternalEList)getResults()).basicRemove(otherEnd, msgs);
+			case ExecutionflowPackage.EXECUTION_FLOW__FLOW_CONNECTIONS:
+				return ((InternalEList)getFlowConnections()).basicRemove(otherEnd, msgs);
+			case ExecutionflowPackage.EXECUTION_FLOW__EXECUTION_FLOW_OBJECTS:
+				return ((InternalEList)getExecutionFlowObjects()).basicRemove(otherEnd, msgs);
+			case ExecutionflowPackage.EXECUTION_FLOW__START_POINT:
+				return basicSetStartPoint(null, msgs);
+			case ExecutionflowPackage.EXECUTION_FLOW__START_POINT_CONNECTION:
+				return basicSetStartPointConnection(null, msgs);
+		}
+		return super.eInverseRemove(otherEnd, featureID, msgs);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public Object eGet(int featureID, boolean resolve, boolean coreType) {
+		switch (featureID) {
+			case ExecutionflowPackage.EXECUTION_FLOW__TITLE:
+				return getTitle();
+			case ExecutionflowPackage.EXECUTION_FLOW__EXECUTABLE_FLOW_OBJECTS:
+				return getExecutableFlowObjects();
+			case ExecutionflowPackage.EXECUTION_FLOW__RESULTS:
+				return getResults();
+			case ExecutionflowPackage.EXECUTION_FLOW__FLOW_CONNECTIONS:
+				return getFlowConnections();
+			case ExecutionflowPackage.EXECUTION_FLOW__EXECUTION_FLOW_OBJECTS:
+				return getExecutionFlowObjects();
+			case ExecutionflowPackage.EXECUTION_FLOW__START_POINT:
+				return getStartPoint();
+			case ExecutionflowPackage.EXECUTION_FLOW__START_POINT_CONNECTION:
+				return getStartPointConnection();
+		}
+		return super.eGet(featureID, resolve, coreType);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public void eSet(int featureID, Object newValue) {
+		switch (featureID) {
+			case ExecutionflowPackage.EXECUTION_FLOW__TITLE:
+				setTitle((String)newValue);
+				return;
+			case ExecutionflowPackage.EXECUTION_FLOW__EXECUTABLE_FLOW_OBJECTS:
+				getExecutableFlowObjects().clear();
+				getExecutableFlowObjects().addAll((Collection)newValue);
+				return;
+			case ExecutionflowPackage.EXECUTION_FLOW__RESULTS:
+				getResults().clear();
+				getResults().addAll((Collection)newValue);
+				return;
+			case ExecutionflowPackage.EXECUTION_FLOW__FLOW_CONNECTIONS:
+				getFlowConnections().clear();
+				getFlowConnections().addAll((Collection)newValue);
+				return;
+			case ExecutionflowPackage.EXECUTION_FLOW__EXECUTION_FLOW_OBJECTS:
+				getExecutionFlowObjects().clear();
+				getExecutionFlowObjects().addAll((Collection)newValue);
+				return;
+			case ExecutionflowPackage.EXECUTION_FLOW__START_POINT:
+				setStartPoint((StartPoint)newValue);
+				return;
+			case ExecutionflowPackage.EXECUTION_FLOW__START_POINT_CONNECTION:
+				setStartPointConnection((StartPointConnection)newValue);
+				return;
+		}
+		super.eSet(featureID, newValue);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public void eUnset(int featureID) {
+		switch (featureID) {
+			case ExecutionflowPackage.EXECUTION_FLOW__TITLE:
+				setTitle(TITLE_EDEFAULT);
+				return;
+			case ExecutionflowPackage.EXECUTION_FLOW__EXECUTABLE_FLOW_OBJECTS:
+				getExecutableFlowObjects().clear();
+				return;
+			case ExecutionflowPackage.EXECUTION_FLOW__RESULTS:
+				getResults().clear();
+				return;
+			case ExecutionflowPackage.EXECUTION_FLOW__FLOW_CONNECTIONS:
+				getFlowConnections().clear();
+				return;
+			case ExecutionflowPackage.EXECUTION_FLOW__EXECUTION_FLOW_OBJECTS:
+				getExecutionFlowObjects().clear();
+				return;
+			case ExecutionflowPackage.EXECUTION_FLOW__START_POINT:
+				setStartPoint((StartPoint)null);
+				return;
+			case ExecutionflowPackage.EXECUTION_FLOW__START_POINT_CONNECTION:
+				setStartPointConnection((StartPointConnection)null);
+				return;
+		}
+		super.eUnset(featureID);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public boolean eIsSet(int featureID) {
+		switch (featureID) {
+			case ExecutionflowPackage.EXECUTION_FLOW__TITLE:
+				return TITLE_EDEFAULT == null ? title != null : !TITLE_EDEFAULT.equals(title);
+			case ExecutionflowPackage.EXECUTION_FLOW__EXECUTABLE_FLOW_OBJECTS:
+				return executableFlowObjects != null && !executableFlowObjects.isEmpty();
+			case ExecutionflowPackage.EXECUTION_FLOW__RESULTS:
+				return results != null && !results.isEmpty();
+			case ExecutionflowPackage.EXECUTION_FLOW__FLOW_CONNECTIONS:
+				return flowConnections != null && !flowConnections.isEmpty();
+			case ExecutionflowPackage.EXECUTION_FLOW__EXECUTION_FLOW_OBJECTS:
+				return executionFlowObjects != null && !executionFlowObjects.isEmpty();
+			case ExecutionflowPackage.EXECUTION_FLOW__START_POINT:
+				return startPoint != null;
+			case ExecutionflowPackage.EXECUTION_FLOW__START_POINT_CONNECTION:
+				return startPointConnection != null;
+		}
+		return super.eIsSet(featureID);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public String toString() {
+		if (eIsProxy()) return super.toString();
+
+		StringBuffer result = new StringBuffer(super.toString());
+		result.append(" (title: ");
+		result.append(title);
+		result.append(')');
+		return result.toString();
+	}
+
+} //ExecutionFlowImpl

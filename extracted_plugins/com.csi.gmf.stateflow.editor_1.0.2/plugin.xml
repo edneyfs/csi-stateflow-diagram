@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+
+<!--
+ <copyright>
+ </copyright>
+
+ $Id$
+-->
+
+<plugin>
+
+
+  <extension
+    point = "org.eclipse.ui.newWizards">
+    <category
+      id = "org.eclipse.emf.ecore.Wizard.category.ID"
+      name="%_UI_Wizard_category">
+    </category>
+    <wizard
+      id = "com.csi.gmf.stateflow.presentation.StateflowModelWizardID"
+      name = "%_UI_StateflowModelWizard_label"
+      class = "com.csi.gmf.stateflow.presentation.StateflowModelWizard"
+      category = "org.eclipse.emf.ecore.Wizard.category.ID"
+      icon = "icons/full/obj16/StateflowModelFile.gif">
+      <description>%_UI_StateflowModelWizard_description</description>
+      <selection class = "org.eclipse.core.resources.IResource" />
+    </wizard>
+  </extension>
+
+  <extension point = "org.eclipse.ui.editors">
+    <editor
+        id = "com.csi.gmf.stateflow.presentation.StateflowEditorID"
+        name = "%_UI_StateflowEditor_label"
+        icon = "icons/full/obj16/StateflowModelFile.gif"
+        extensions = "stateflow"
+        class = "com.csi.gmf.stateflow.presentation.StateflowEditor" 
+        contributorClass="com.csi.gmf.stateflow.presentation.StateflowActionBarContributor" >
+    </editor>
+  </extension>    
+</plugin>

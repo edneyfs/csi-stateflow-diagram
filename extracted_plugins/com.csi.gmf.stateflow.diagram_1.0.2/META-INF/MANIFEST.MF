@@ -1,0 +1,36 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: State Flow Diagram Editor
+Bundle-SymbolicName: com.csi.gmf.stateflow.diagram; singleton:=true
+Bundle-Version: 1.0.2
+Bundle-ClassPath: .
+Bundle-Activator: com.csi.gmf.stateflow.diagram.part.StateflowDiagramE
+ ditorPlugin
+Bundle-Vendor: CSI - Comercio Solucoes Inteligentes Ltda.
+Bundle-Localization: plugin
+Export-Package: com.csi.gmf.stateflow.diagram,com.csi.gmf.stateflow.di
+ agram.edit.commands,com.csi.gmf.stateflow.diagram.edit.helpers,com.cs
+ i.gmf.stateflow.diagram.edit.parts,com.csi.gmf.stateflow.diagram.edit
+ .policies,com.csi.gmf.stateflow.diagram.parsers,com.csi.gmf.stateflow
+ .diagram.part,com.csi.gmf.stateflow.diagram.preferences,com.csi.gmf.s
+ tateflow.diagram.providers,com.csi.gmf.stateflow.diagram.sheet,com.cs
+ i.gmf.stateflow.diagram.view.factories
+Require-Bundle: org.eclipse.core.runtime,org.eclipse.core.resources,or
+ g.eclipse.jface,org.eclipse.ui.ide,org.eclipse.ui.views,org.eclipse.u
+ i.workbench,org.eclipse.ui.workbench.texteditor,org.eclipse.emf.ecore
+ ,org.eclipse.emf.ecore.xmi,org.eclipse.emf.edit.ui,org.eclipse.gef;vi
+ sibility:=reexport,org.eclipse.gmf.runtime.emf.core,org.eclipse.gmf.r
+ untime.emf.commands.core,org.eclipse.gmf.runtime.emf.ui.properties,or
+ g.eclipse.gmf.runtime.diagram.ui,org.eclipse.gmf.runtime.diagram.ui.p
+ rinting.render,org.eclipse.gmf.runtime.diagram.ui.printing,org.eclips
+ e.gmf.runtime.diagram.ui.providers,org.eclipse.gmf.runtime.diagram.ui
+ .providers.ide,org.eclipse.gmf.runtime.diagram.ui.render,org.eclipse.
+ gmf.runtime.diagram.ui.resources.editor,org.eclipse.gmf.runtime.diagr
+ am.ui.resources.editor.ide,org.eclipse.gmf.runtime.notation.providers
+ ,com.csi.gmf.stateflow;visibility:=reexport,com.csi.gmf.stateflow.edi
+ t;visibility:=reexport,org.eclipse.emf.validation;visibility:=reexpor
+ t,org.eclipse.gmf.runtime.draw2d.ui;visibility:=reexport,org.eclipse.
+ draw2d;visibility:=reexport,org.eclipse.search,org.eclipse.gmf.runtim
+ e.diagram.ui.properties
+Eclipse-LazyStart: true
+

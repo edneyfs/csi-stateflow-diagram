@@ -1,0 +1,160 @@
+/**
+ * <copyright>
+ * </copyright>
+ *
+ * $Id$
+ */
+package com.csi.gmf.executionflow.impl;
+
+import com.csi.gmf.executionflow.ExecutionFlowResult;
+import com.csi.gmf.executionflow.ExecutionflowPackage;
+
+import org.eclipse.emf.common.notify.Notification;
+
+import org.eclipse.emf.ecore.EClass;
+
+import org.eclipse.emf.ecore.impl.ENotificationImpl;
+
+/**
+ * <!-- begin-user-doc -->
+ * An implementation of the model object '<em><b>Execution Flow Result</b></em>'.
+ * <!-- end-user-doc -->
+ * <p>
+ * The following features are implemented:
+ * <ul>
+ *   <li>{@link com.csi.gmf.executionflow.impl.ExecutionFlowResultImpl#getExecutionFlowResultValue <em>Execution Flow Result Value</em>}</li>
+ * </ul>
+ * </p>
+ *
+ * @generated
+ */
+public class ExecutionFlowResultImpl extends FlowObjectImpl implements ExecutionFlowResult {
+	/**
+	 * The default value of the '{@link #getExecutionFlowResultValue() <em>Execution Flow Result Value</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #getExecutionFlowResultValue()
+	 * @generated
+	 * @ordered
+	 */
+	protected static final String EXECUTION_FLOW_RESULT_VALUE_EDEFAULT = null;
+
+	/**
+	 * The cached value of the '{@link #getExecutionFlowResultValue() <em>Execution Flow Result Value</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #getExecutionFlowResultValue()
+	 * @generated
+	 * @ordered
+	 */
+	protected String executionFlowResultValue = EXECUTION_FLOW_RESULT_VALUE_EDEFAULT;
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	protected ExecutionFlowResultImpl() {
+		super();
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	protected EClass eStaticClass() {
+		return ExecutionflowPackage.Literals.EXECUTION_FLOW_RESULT;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public String getExecutionFlowResultValue() {
+		return executionFlowResultValue;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public void setExecutionFlowResultValue(String newExecutionFlowResultValue) {
+		String oldExecutionFlowResultValue = executionFlowResultValue;
+		executionFlowResultValue = newExecutionFlowResultValue;
+		if (eNotificationRequired())
+			eNotify(new ENotificationImpl(this, Notification.SET, ExecutionflowPackage.EXECUTION_FLOW_RESULT__EXECUTION_FLOW_RESULT_VALUE, oldExecutionFlowResultValue, executionFlowResultValue));
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public Object eGet(int featureID, boolean resolve, boolean coreType) {
+		switch (featureID) {
+			case ExecutionflowPackage.EXECUTION_FLOW_RESULT__EXECUTION_FLOW_RESULT_VALUE:
+				return getExecutionFlowResultValue();
+		}
+		return super.eGet(featureID, resolve, coreType);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public void eSet(int featureID, Object newValue) {
+		switch (featureID) {
+			case ExecutionflowPackage.EXECUTION_FLOW_RESULT__EXECUTION_FLOW_RESULT_VALUE:
+				setExecutionFlowResultValue((String)newValue);
+				return;
+		}
+		super.eSet(featureID, newValue);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public void eUnset(int featureID) {
+		switch (featureID) {
+			case ExecutionflowPackage.EXECUTION_FLOW_RESULT__EXECUTION_FLOW_RESULT_VALUE:
+				setExecutionFlowResultValue(EXECUTION_FLOW_RESULT_VALUE_EDEFAULT);
+				return;
+		}
+		super.eUnset(featureID);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public boolean eIsSet(int featureID) {
+		switch (featureID) {
+			case ExecutionflowPackage.EXECUTION_FLOW_RESULT__EXECUTION_FLOW_RESULT_VALUE:
+				return EXECUTION_FLOW_RESULT_VALUE_EDEFAULT == null ? executionFlowResultValue != null : !EXECUTION_FLOW_RESULT_VALUE_EDEFAULT.equals(executionFlowResultValue);
+		}
+		return super.eIsSet(featureID);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public String toString() {
+		if (eIsProxy()) return super.toString();
+
+		StringBuffer result = new StringBuffer(super.toString());
+		result.append(" (executionFlowResultValue: ");
+		result.append(executionFlowResultValue);
+		result.append(')');
+		return result.toString();
+	}
+
+} //ExecutionFlowResultImpl
