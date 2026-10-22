@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<com.csi.gmf.executionflow:ExecutionFlow xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:com.csi.gmf.executionflow="http:///com/csi/gmf/executionflow.ecore" id="7025" title="7025_AJUSTES_DURANTE_VENDA" description="Ajustes de Venda em Andamento" requestAuthorization="true">
+  <startPoint/>
+  <startPointConnection destinationObjectPathKey="1386704906523"/>
+  <executableFlowObjects pathKey="1386704906523" className="com.csi.oper.pos.MicSalvaDisplay" simpleClassName="MicSalvaDisplay"/>
+  <executableFlowObjects pathKey="1386704906524" className="com.csi.oper.pos.MicConfirmaAjustes" simpleClassName="MicConfirmaAjustes"/>
+  <results pathKey="1386704906540" executionFlowResultValue="AJUSTE_CONCLUIDO"/>
+  <flowConnections sourcePathKey="1386704906523" destinationPathKey="1386704906524" executionFlowResultValue="DEFAULT"/>
+  <flowConnections sourcePathKey="1386704906524" destinationPathKey="1386704906540" executionFlowResultValue="DEFAULT"/>
+</com.csi.gmf.executionflow:ExecutionFlow>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<com.csi.gmf.executionflow:ExecutionFlow xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:com.csi.gmf.executionflow="http:///com/csi/gmf/executionflow.ecore" id="7001" title="7001_ABERTURA_CUPOM" description="Abertura de Cupom Fiscal PDV" requestAuthorization="false">
+  <startPoint/>
+  <startPointConnection destinationObjectPathKey="1386704906601"/>
+  <executableFlowObjects pathKey="1386704906601" className="com.csi.oper.pos.MicValidaOperador" simpleClassName="MicValidaOperador"/>
+  <executableFlowObjects pathKey="1386704906602" className="com.csi.oper.pos.MicAberturaCupom" simpleClassName="MicAberturaCupom"/>
+  <results pathKey="1386704906609" executionFlowResultValue="CUPOM_ABERTO"/>
+  <flowConnections sourcePathKey="1386704906601" destinationPathKey="1386704906602" executionFlowResultValue="DEFAULT"/>
+  <flowConnections sourcePathKey="1386704906602" destinationPathKey="1386704906609" executionFlowResultValue="DEFAULT"/>
+</com.csi.gmf.executionflow:ExecutionFlow>

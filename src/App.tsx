@@ -19,6 +19,8 @@ import {
 } from 'lucide-react';
 import { DiagramCanvas } from './components/canvas/DiagramCanvas';
 import type { DiagramFileInfo } from './services/diagramScanner';
+import { XmlEngine } from './services/xmlEngine';
+import { GraphConverter } from './services/graphConverter';
 
 // Diagramas padrão pré-carregados para navegação imediata
 const defaultMockDiagrams: DiagramFileInfo[] = [
@@ -233,23 +235,28 @@ const sampleEdges: Edge[] = [
 ];
 
 export function App() {
-  // Estado do Workspace selecionado
+  // Estado do Workspace selecionado (solicita na inicialização se não configurado)
   const [workspacePath, setWorkspacePath] = useState<string>(() => {
     return localStorage.getItem('csi_workspace_path') || 'C:\\p2k-centauro-trunk';
   });
-  const [showWorkspaceModal, setShowWorkspaceModal] = useState<boolean>(false);
+  const [showWorkspaceModal, setShowWorkspaceModal] = useState<boolean>(() => {
+    return !localStorage.getItem('csi_workspace_path');
+  });
   const [workspaceInput, setWorkspaceInput] = useState<string>(workspacePath);
 
-  // Lista de TODOS os diagramas encontrados
+  // Lista de TODOS os diagramas encontrados no workspace
   const [diagramList, setDiagramList] = useState<DiagramFileInfo[]>(defaultMockDiagrams);
   const [diagramSearch, setDiagramSearch] = useState<string>('');
   const [diagramTypeFilter, setDiagramTypeFilter] = useState<'all' | 'executionflow' | 'stateflow'>('all');
 
-  // Abas e nós
+  // Abas e nós ativos no canvas
   const [activeTab, setActiveTab] = useState<string>('7026_CONFIRMACAO_AJUSTES.executionflow');
+  const [currentNodes, setCurrentNodes] = useState<Node[]>(sampleNodes);
+  const [currentEdges, setCurrentEdges] = useState<Edge[]>(sampleEdges);
   const [selectedNode, setSelectedNode] = useState<Node | null>(sampleNodes[1]);
 
-  // Classes Java
+  // Classes Java escaneadas dinamicamente
+  const [scannedJavaClasses, setScannedJavaClasses] = useState<Array<{ name: string; pkg: string }>>([]);
   const [javaSearch, setJavaSearch] = useState<string>('');
   const [micOnly, setMicOnly] = useState<boolean>(true);
 
@@ -271,7 +278,36 @@ export function App() {
     node: Node | null;
   } | null>(null);
 
-  // Varredura de diagramas via Electron IPC quando o workspace muda
+  // Carrega e renderiza um diagrama a partir do arquivo XML
+  const handleOpenDiagram = useCallback(
+    async (d: DiagramFileInfo) => {
+      setActiveTab(d.name);
+      if (window.api && d.fullPath) {
+        try {
+          const xml = await window.api.readFile(d.fullPath);
+          if (xml) {
+            const model = XmlEngine.parse(xml);
+            const { nodes, edges } = GraphConverter.modelToGraph(model);
+            setCurrentNodes(nodes);
+            setCurrentEdges(edges);
+            setSelectedNode(nodes.find((n) => n.type === 'executable') || nodes[0] || null);
+            return;
+          }
+        } catch (err) {
+          console.warn('Erro ao ler diagrama via IPC, utilizando fallback visual:', err);
+        }
+      }
+      // Fallback para mock caso não esteja no Electron ou erro de leitura
+      if (d.name.includes('7026')) {
+        setCurrentNodes(sampleNodes);
+        setCurrentEdges(sampleEdges);
+        setSelectedNode(sampleNodes[1]);
+      }
+    },
+    []
+  );
+
+  // Varredura de diagramas e classes via Electron IPC quando o workspace muda
   useEffect(() => {
     if (window.api && workspacePath) {
       window.api.scanDiagrams(workspacePath).then((files) => {
@@ -279,11 +315,16 @@ export function App() {
           setDiagramList(files);
         }
       });
+      window.api.scanJavaClasses(workspacePath).then((classes) => {
+        if (classes && classes.length > 0) {
+          setScannedJavaClasses(classes.map((c) => ({ name: c.className, pkg: c.fullPackage })));
+        }
+      });
     }
   }, [workspacePath]);
 
-  // Classes Java mock para autocompletion rápido
-  const javaClasses = useMemo(
+  // Lista combinada de classes Java (mock + varredura real)
+  const defaultJavaClasses = useMemo(
     () => [
       { name: 'MicSalvaDisplay', pkg: 'com.csi.oper.pos.MicSalvaDisplay' },
       { name: 'MicConfirmaAjustes', pkg: 'com.csi.oper.pos.MicConfirmaAjustes' },
@@ -297,6 +338,13 @@ export function App() {
     ],
     []
   );
+
+  const javaClasses = useMemo(() => {
+    if (scannedJavaClasses.length > 0) {
+      return scannedJavaClasses;
+    }
+    return defaultJavaClasses;
+  }, [scannedJavaClasses, defaultJavaClasses]);
 
   const filteredClasses = useMemo(() => {
     return javaClasses.filter((c) => {
@@ -338,8 +386,29 @@ export function App() {
     });
   }, []);
 
-  const handleSearchReferences = (className: string) => {
+  const handleSearchReferences = async (className: string) => {
     setContextMenu(null);
+    if (window.api && workspacePath) {
+      try {
+        const refs = await window.api.findReferences(workspacePath, className);
+        if (refs && refs.length > 0) {
+          setReferenceDrawer({
+            visible: true,
+            className,
+            results: refs.map((r) => ({
+              diagramName: r.diagramName,
+              path: r.relativePath,
+              nodePathKey: r.nodePathKey,
+            })),
+          });
+          return;
+        }
+      } catch (err) {
+        console.warn('Busca nativa de referências via IPC:', err);
+      }
+    }
+
+    // Demonstração com dados da referência real de 7025 e 7026
     setReferenceDrawer({
       visible: true,
       className,
@@ -518,7 +587,7 @@ export function App() {
                   <div
                     key={d.relativePath}
                     onClick={() => {
-                      setActiveTab(d.name);
+                      handleOpenDiagram(d);
                     }}
                     className={`p-2 rounded cursor-pointer transition flex flex-col gap-1 border ${
                       isActive
@@ -627,8 +696,9 @@ export function App() {
           {/* Interactive React Flow Canvas */}
           <div className="flex-1 relative overflow-hidden">
             <DiagramCanvas
-              initialNodes={sampleNodes}
-              initialEdges={sampleEdges}
+              key={activeTab}
+              initialNodes={currentNodes}
+              initialEdges={currentEdges}
               onSelectNode={handleSelectNode}
               onContextMenuNode={handleContextMenuNode}
             />
@@ -664,8 +734,12 @@ export function App() {
                   <div
                     key={idx}
                     onClick={() => {
-                      setActiveTab(ref.diagramName);
-                      alert(`Abrindo ${ref.diagramName} e focando nó #${ref.nodePathKey}`);
+                      const found = diagramList.find((d) => d.name === ref.diagramName);
+                      if (found) {
+                        handleOpenDiagram(found);
+                      } else {
+                        setActiveTab(ref.diagramName);
+                      }
                     }}
                     className="text-xs p-2 rounded bg-slate-950/70 hover:bg-slate-800 text-slate-300 cursor-pointer flex items-center justify-between border border-slate-800/50 group transition"
                   >

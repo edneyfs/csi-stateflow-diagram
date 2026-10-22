@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<com.csi.gmf.executionflow:ExecutionFlow xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:com.csi.gmf.executionflow="http:///com/csi/gmf/executionflow.ecore" id="7026" title="7026_CONFIRMACAO_AJUSTES" description="Confirmacao de Ajustes de Venda" requestAuthorization="false">
+  <startPoint/>
+  <startPointConnection destinationObjectPathKey="1386704906523"/>
+  <executableFlowObjects pathKey="1386704906523" className="com.csi.oper.pos.MicSalvaDisplay" simpleClassName="MicSalvaDisplay"/>
+  <executableFlowObjects pathKey="1386704906524" className="com.csi.oper.pos.MicConfirmaAjustes" simpleClassName="MicConfirmaAjustes"/>
+  <executableFlowObjects pathKey="1386704906525" className="com.csi.oper.pos.MicSolicitaDadosClienteAjuste" simpleClassName="MicSolicitaDadosClienteAjuste"/>
+  <executableFlowObjects pathKey="1386704906526" className="com.csi.oper.pos.MicAbandonaAjustes" simpleClassName="MicAbandonaAjustes"/>
+  <executableFlowObjects pathKey="1386704906527" className="com.csi.oper.pos.MicRecuperaDisplay" simpleClassName="MicRecuperaDisplay"/>
+  <results pathKey="1386704906530" executionFlowResultValue="FINALIZA_AJUSTES"/>
+  <flowConnections sourcePathKey="1386704906523" destinationPathKey="1386704906524" executionFlowResultValue="DEFAULT"/>
+  <flowConnections sourcePathKey="1386704906524" destinationPathKey="1386704906525" executionFlowResultValue="DEFAULT"/>
+  <flowConnections sourcePathKey="1386704906524" destinationPathKey="1386704906526" executionFlowResultValue="ABANDONAR_AJUSTES"/>
+  <flowConnections sourcePathKey="1386704906525" destinationPathKey="1386704906526" executionFlowResultValue="ABANDONAR_AJUSTES"/>
+  <flowConnections sourcePathKey="1386704906524" destinationPathKey="1386704906527" executionFlowResultValue="NAO_HA_AJUSTES"/>
+  <flowConnections sourcePathKey="1386704906525" destinationPathKey="1386704906527" executionFlowResultValue="DEFAULT"/>
+  <flowConnections sourcePathKey="1386704906526" destinationPathKey="1386704906527" executionFlowResultValue="DEFAULT"/>
+  <flowConnections sourcePathKey="1386704906527" destinationPathKey="1386704906530" executionFlowResultValue="DEFAULT"/>
+</com.csi.gmf.executionflow:ExecutionFlow>

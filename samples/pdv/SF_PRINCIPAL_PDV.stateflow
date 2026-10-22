@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<com.csi.gmf.stateflow:StateFlow xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:com.csi.gmf.stateflow="http:///com/csi/gmf/stateflow.ecore" id="SF_PDV_01" description="Fluxo Principal PDV" volatile="false">
+  <startPoint/>
+  <startPointConnection destinationStateId="STATE_ESPERA"/>
+  <states pathKey="1386704906100" id="STATE_ESPERA" description="Estado de Espera de Venda"/>
+  <states pathKey="1386704906101" id="STATE_EM_VENDA" description="Registro de Itens"/>
+  <executionFlows pathKey="1386704906200" id="FLOW_ABRE_CUPOM" title="Abertura de Cupom" filePath="7001_ABERTURA_CUPOM.executionflow"/>
+  <stateConnections sourcePathKey="1386704906100" destinationPathKey="1386704906200" eventID="EVT_INICIAR_VENDA"/>
+  <flowConnections sourcePathKey="1386704906200" destinationPathKey="1386704906101" executionFlowResultValue="DEFAULT"/>
+</com.csi.gmf.stateflow:StateFlow>

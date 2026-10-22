@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<com.csi.gmf.stateflow:StateFlow xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:com.csi.gmf.stateflow="http:///com/csi/gmf/stateflow.ecore" id="SF_RETAGUARDA_01" description="Fluxo de Sincronismo da Retaguarda" volatile="true">
+  <startPoint/>
+  <startPointConnection destinationStateId="STATE_IDLE"/>
+  <states pathKey="1386704906701" id="STATE_IDLE" description="Aguardando Lote"/>
+  <states pathKey="1386704906702" id="STATE_SINCRONIZANDO" description="Transmitindo Lotes"/>
+  <stateConnections sourcePathKey="1386704906701" destinationPathKey="1386704906702" eventID="EVT_SINCRONIZAR"/>
+</com.csi.gmf.stateflow:StateFlow>

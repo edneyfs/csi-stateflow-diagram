@@ -10,6 +10,9 @@
     "test": "node --test tests/*.node.test.js",
     "test:vitest": "vitest run",
     "test:e2e": "playwright test",
+    "doc:record": "node scripts/record-doc-flows.js",
+    "doc:gifs": "python scripts/compile-doc-gifs.py",
+    "doc:site": "node scripts/record-doc-flows.js && python scripts/compile-doc-gifs.py && node scripts/generate-doc-site.js",
     "build:docs": "node scripts/generate-doc-site.js",
     "package": "npm run build && electron-builder"
   },
