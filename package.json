@@ -5,7 +5,8 @@
   "main": "dist-electron/electron/main.js",
   "scripts": {
     "dev": "vite",
-    "dev:electron": "concurrently \"vite\" \"wait-on tcp:5173 && electron .\"",
+    "dev:electron": "tsc -p tsconfig.electron.json && concurrently \"vite\" \"wait-on tcp:5173 && electron .\"",
+    "postinstall": "node node_modules/electron/install.js",
     "build": "tsc && vite build && tsc -p tsconfig.electron.json",
     "test": "node --test tests/*.node.test.js",
     "test:vitest": "vitest run",
