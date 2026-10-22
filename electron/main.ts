@@ -1,6 +1,9 @@
 import { app, BrowserWindow, ipcMain, dialog } from 'electron';
 import path from 'path';
 import fs from 'fs';
+import { DiagramScanner } from '../src/services/diagramScanner';
+import { JavaScanner } from '../src/services/javaScanner';
+import { ReferenceEngine } from '../src/services/referenceEngine';
 
 let mainWindow: BrowserWindow | null = null;
 
@@ -23,7 +26,6 @@ function createWindow() {
 
   if (isDev) {
     mainWindow.loadURL('http://localhost:5173');
-    mainWindow.webContents.openDevTools({ mode: 'detach' });
   } else {
     mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
   }
@@ -49,13 +51,44 @@ app.on('window-all-closed', () => {
   }
 });
 
-// IPC: Diálogo de abertura de pasta do projeto
+// IPC: Diálogo de abertura de pasta do workspace
 ipcMain.handle('dialog:openDirectory', async () => {
   const result = await dialog.showOpenDialog(mainWindow!, {
     properties: ['openDirectory'],
-    title: 'Selecionar Pasta do Projeto CSI / P2K',
+    title: 'Selecionar Pasta Workspace do Projeto CSI / P2K',
   });
   return result.filePaths[0] || null;
+});
+
+// IPC: Varredura de TODOS os diagramas da pasta
+ipcMain.handle('workspace:scanDiagrams', async (_, workspacePath: string) => {
+  try {
+    return await DiagramScanner.scanWorkspaceDiagrams(workspacePath);
+  } catch (error: any) {
+    console.error('Erro ao varrer diagramas:', error);
+    return [];
+  }
+});
+
+// IPC: Varredura de classes Java
+ipcMain.handle('workspace:scanJavaClasses', async (_, workspacePath: string) => {
+  try {
+    return await JavaScanner.scanDirectory(workspacePath);
+  } catch (error: any) {
+    console.error('Erro ao varrer classes Java:', error);
+    return [];
+  }
+});
+
+// IPC: Busca de referências
+ipcMain.handle('workspace:findReferences', async (_, workspacePath: string, className: string) => {
+  try {
+    await ReferenceEngine.indexWorkspace(workspacePath);
+    return ReferenceEngine.findReferences(className);
+  } catch (error: any) {
+    console.error('Erro ao buscar referências:', error);
+    return [];
+  }
 });
 
 // IPC: Leitura de arquivo
