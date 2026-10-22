@@ -1,47 +1,273 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
+import { Node, Edge, MarkerType } from '@xyflow/react';
 import {
   FolderOpen,
   Save,
   Search,
   HelpCircle,
-  Play,
   Layers,
   Settings,
   Plus,
   FileCode,
-  FileText
+  FileText,
+  X,
+  ExternalLink,
 } from 'lucide-react';
+import { DiagramCanvas } from './components/canvas/DiagramCanvas';
+
+// Dados iniciais fiéis à captura de tela 7026_CONFIRMACAO_AJUSTES.executionflow_diagram
+const initialNodesData: Node[] = [
+  {
+    id: 'start-point',
+    type: 'startPoint',
+    position: { x: 50, y: 150 },
+    data: {},
+  },
+  {
+    id: '1386704906523',
+    type: 'executable',
+    position: { x: 160, y: 135 },
+    data: {
+      title: 'MicSalvaDisplay',
+      className: 'com.csi.oper.pos.MicSalvaDisplay',
+      pathKey: '1386704906523',
+    },
+  },
+  {
+    id: '1386704906524',
+    type: 'executable',
+    position: { x: 380, y: 135 },
+    data: {
+      title: 'MicConfirmaAjustes',
+      className: 'com.csi.oper.pos.MicConfirmaAjustes',
+      pathKey: '1386704906524',
+    },
+  },
+  {
+    id: '1386704906525',
+    type: 'executable',
+    position: { x: 640, y: 135 },
+    data: {
+      title: 'MicSolicitaDadosClienteAjuste',
+      className: 'com.csi.oper.pos.MicSolicitaDadosClienteAjuste',
+      pathKey: '1386704906525',
+    },
+  },
+  {
+    id: '1386704906526',
+    type: 'executable',
+    position: { x: 920, y: 40 },
+    data: {
+      title: 'MicAbandonaAjustes',
+      className: 'com.csi.oper.pos.MicAbandonaAjustes',
+      pathKey: '1386704906526',
+    },
+  },
+  {
+    id: '1386704906527',
+    type: 'executable',
+    position: { x: 920, y: 135 },
+    data: {
+      title: 'MicRecuperaDisplay',
+      className: 'com.csi.oper.pos.MicRecuperaDisplay',
+      pathKey: '1386704906527',
+    },
+  },
+  {
+    id: '1386704906530',
+    type: 'result',
+    position: { x: 1160, y: 145 },
+    data: {
+      title: 'FINALIZA_AJUSTES',
+      pathKey: '1386704906530',
+    },
+  },
+  {
+    id: 'note-1',
+    type: 'stickyNote',
+    position: { x: 160, y: 260 },
+    data: {
+      text: 'Fluxo principal de ajuste de venda. Todas as ações gravam no display e tratam exceção de abandono.',
+    },
+  },
+];
+
+const initialEdgesData: Edge[] = [
+  {
+    id: 'e-start-1',
+    source: 'start-point',
+    target: '1386704906523',
+    type: 'orthogonal',
+    markerEnd: { type: MarkerType.ArrowClosed, color: '#64748b' },
+    data: { isStartLink: true },
+  },
+  {
+    id: 'e-1-2',
+    source: '1386704906523',
+    target: '1386704906524',
+    type: 'orthogonal',
+    markerEnd: { type: MarkerType.ArrowClosed, color: '#94a3b8' },
+    data: { label: 'DEFAULT' },
+  },
+  {
+    id: 'e-2-3',
+    source: '1386704906524',
+    target: '1386704906525',
+    type: 'orthogonal',
+    markerEnd: { type: MarkerType.ArrowClosed, color: '#94a3b8' },
+    data: { label: 'DEFAULT' },
+  },
+  {
+    id: 'e-2-4',
+    source: '1386704906524',
+    target: '1386704906526',
+    type: 'orthogonal',
+    markerEnd: { type: MarkerType.ArrowClosed, color: '#94a3b8' },
+    data: { label: 'ABANDONAR_AJUSTES' },
+  },
+  {
+    id: 'e-3-4',
+    source: '1386704906525',
+    target: '1386704906526',
+    type: 'orthogonal',
+    markerEnd: { type: MarkerType.ArrowClosed, color: '#94a3b8' },
+    data: { label: 'ABANDONAR_AJUSTES' },
+  },
+  {
+    id: 'e-2-5',
+    source: '1386704906524',
+    target: '1386704906527',
+    type: 'orthogonal',
+    markerEnd: { type: MarkerType.ArrowClosed, color: '#94a3b8' },
+    data: { label: 'NAO_HA_AJUSTES' },
+  },
+  {
+    id: 'e-3-5',
+    source: '1386704906525',
+    target: '1386704906527',
+    type: 'orthogonal',
+    markerEnd: { type: MarkerType.ArrowClosed, color: '#94a3b8' },
+    data: { label: 'DEFAULT' },
+  },
+  {
+    id: 'e-4-5',
+    source: '1386704906526',
+    target: '1386704906527',
+    type: 'orthogonal',
+    markerEnd: { type: MarkerType.ArrowClosed, color: '#94a3b8' },
+    data: { label: 'DEFAULT' },
+  },
+  {
+    id: 'e-5-res',
+    source: '1386704906527',
+    target: '1386704906530',
+    type: 'orthogonal',
+    markerEnd: { type: MarkerType.ArrowClosed, color: '#94a3b8' },
+    data: { label: 'DEFAULT' },
+  },
+];
 
 export function App() {
   const [activeTab, setActiveTab] = useState<string>('7026_CONFIRMACAO_AJUSTES.executionflow');
-  const [selectedNode, setSelectedNode] = useState<{
-    id: string;
-    type: string;
-    title: string;
-    className?: string;
-    pathKey?: string;
-  } | null>({
-    id: '1386704906523',
-    type: 'ExecutableFlowObject',
-    title: 'MicSalvaDisplay',
-    className: 'com.csi.oper.pos.MicSalvaDisplay',
-    pathKey: '1386704906523',
+  const [selectedNode, setSelectedNode] = useState<Node | null>(initialNodesData[1]);
+  const [searchFilter, setSearchFilter] = useState('');
+  const [micOnly, setMicOnly] = useState(true);
+
+  // Painel de Busca Cruzada ("Search ExecutionFlow Diagram References...")
+  const [referenceDrawer, setReferenceDrawer] = useState<{
+    visible: boolean;
+    className: string;
+    results: Array<{ diagramName: string; path: string; nodePathKey: string }>;
+  }>({
+    visible: false,
+    className: '',
+    results: [],
   });
+
+  // Menu de Contexto do Nó
+  const [contextMenu, setContextMenu] = useState<{
+    x: number;
+    y: number;
+    node: Node | null;
+  } | null>(null);
+
+  const javaClasses = useMemo(
+    () => [
+      { name: 'MicSalvaDisplay', pkg: 'com.csi.oper.pos.MicSalvaDisplay' },
+      { name: 'MicConfirmaAjustes', pkg: 'com.csi.oper.pos.MicConfirmaAjustes' },
+      { name: 'MicSolicitaDadosClienteAjuste', pkg: 'com.csi.oper.pos.MicSolicitaDadosClienteAjuste' },
+      { name: 'MicAbandonaAjustes', pkg: 'com.csi.oper.pos.MicAbandonaAjustes' },
+      { name: 'MicRecuperaDisplay', pkg: 'com.csi.oper.pos.MicRecuperaDisplay' },
+      { name: 'MicAbreGaveta', pkg: 'com.csi.oper.pos.MicAbreGaveta' },
+      { name: 'MicAberturaCupom', pkg: 'com.csi.oper.pos.MicAberturaCupom' },
+      { name: 'MicExibeMensagem', pkg: 'com.csi.oper.pos.MicExibeMensagem' },
+    ],
+    []
+  );
+
+  const filteredClasses = useMemo(() => {
+    return javaClasses.filter((c) => {
+      if (micOnly && !c.name.startsWith('Mic')) return false;
+      if (!searchFilter) return true;
+      return (
+        c.name.toLowerCase().includes(searchFilter.toLowerCase()) ||
+        c.pkg.toLowerCase().includes(searchFilter.toLowerCase())
+      );
+    });
+  }, [javaClasses, searchFilter, micOnly]);
+
+  const handleSelectNode = useCallback((node: Node | null) => {
+    setSelectedNode(node);
+    setContextMenu(null);
+  }, []);
+
+  const handleContextMenuNode = useCallback((event: React.MouseEvent, node: Node) => {
+    event.preventDefault();
+    setSelectedNode(node);
+    setContextMenu({
+      x: event.clientX,
+      y: event.clientY,
+      node,
+    });
+  }, []);
+
+  const handleSearchReferences = (className: string) => {
+    setContextMenu(null);
+    setReferenceDrawer({
+      visible: true,
+      className,
+      results: [
+        {
+          diagramName: '7025_AJUSTES_DURANTE_VENDA.executionflow',
+          path: 'pdv/7025_AJUSTES_DURANTE_VENDA.executionflow',
+          nodePathKey: '1386704906523',
+        },
+        {
+          diagramName: '7026_CONFIRMACAO_AJUSTES.executionflow',
+          path: 'pdv/7026_CONFIRMACAO_AJUSTES.executionflow',
+          nodePathKey: '1386704906523',
+        },
+      ],
+    });
+  };
 
   const openHelpPortal = () => {
     window.open('site_suporte/index.html', '_blank');
   };
 
   return (
-    <div className="flex flex-col h-screen w-screen bg-slate-950 text-slate-100 select-none font-sans">
+    <div
+      onClick={() => setContextMenu(null)}
+      className="flex flex-col h-screen w-screen bg-slate-950 text-slate-100 select-none font-sans overflow-hidden"
+    >
       {/* 1. Header / Top Navigation */}
-      <header className="h-12 bg-slate-900 border-b border-slate-800 flex items-center justify-between px-4 z-20">
+      <header className="h-12 bg-slate-900 border-b border-slate-800 flex items-center justify-between px-4 z-30 shadow-md">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2 font-semibold text-sky-400">
-            <Layers className="w-5 h-5" />
+            <Layers className="w-5 h-5 text-sky-400" />
             <span className="tracking-wide">CSI StateFlow Studio</span>
           </div>
-          <span className="text-xs px-2 py-0.5 rounded bg-sky-950 text-sky-300 border border-sky-800">
+          <span className="text-xs px-2 py-0.5 rounded-full bg-sky-950 text-sky-300 border border-sky-800 font-mono">
             v1.0.0
           </span>
           <div className="h-4 w-[1px] bg-slate-800 mx-2" />
@@ -55,33 +281,34 @@ export function App() {
 
         <div className="flex items-center gap-2">
           <button
-            onClick={() => alert('Seletor de pasta do projeto via IPC')}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md bg-slate-800 hover:bg-slate-700 text-slate-200 transition border border-slate-700"
+            onClick={() => alert('Seletor de pasta do projeto via IPC (Electron)')}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md bg-slate-800 hover:bg-slate-700 text-slate-200 transition border border-slate-700 shadow-sm"
           >
             <FolderOpen className="w-3.5 h-3.5 text-sky-400" />
             <span>Abrir Projeto</span>
           </button>
           <button
-            onClick={() => alert('Diagrama salvo com sucesso!')}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md bg-sky-600 hover:bg-sky-500 text-white transition shadow-sm"
+            onClick={() => alert('Diagrama salvo em formato XML legado (.executionflow)!')}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md bg-sky-600 hover:bg-sky-500 text-white transition shadow-sm font-semibold"
           >
             <Save className="w-3.5 h-3.5" />
-            <span>Salvar</span>
+            <span>Salvar XML</span>
           </button>
           <button
             onClick={openHelpPortal}
-            className="p-1.5 text-slate-400 hover:text-sky-300 hover:bg-slate-800 rounded-md transition"
-            title="Abrir Central de Ajuda & Suporte"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 rounded-md transition border border-slate-700"
+            title="Abrir Central de Ajuda & Documentação Viva"
           >
-            <HelpCircle className="w-4 h-4" />
+            <HelpCircle className="w-4 h-4 text-emerald-400" />
+            <span>Ajuda</span>
           </button>
         </div>
       </header>
 
       {/* 2. Main Workbench (3 Columns Layout) */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex overflow-hidden relative">
         {/* Left Sidebar: Explorer & Java Classes */}
-        <aside className="w-72 bg-slate-900/95 border-r border-slate-800 flex flex-col z-10">
+        <aside className="w-72 bg-slate-900/95 border-r border-slate-800 flex flex-col z-20 shadow-lg">
           <div className="p-3 border-b border-slate-800 flex items-center justify-between">
             <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
               Explorador de Arquivos
@@ -127,37 +354,58 @@ export function App() {
               <div className="text-xs font-semibold text-slate-500 px-2 mb-1 flex items-center justify-between">
                 <div className="flex items-center gap-1.5">
                   <span className="text-amber-400 font-mono text-[11px]">☕</span>
-                  <span>CLASSES JAVA (MIC*)</span>
+                  <span>CLASSES JAVA (SCANNER)</span>
                 </div>
-                <span className="text-[10px] bg-slate-800 text-slate-400 px-1.5 py-0.2 rounded">5 MICs</span>
+                <button
+                  onClick={() => setMicOnly(!micOnly)}
+                  className={`text-[10px] px-1.5 py-0.2 rounded border transition ${
+                    micOnly
+                      ? 'bg-amber-950 text-amber-300 border-amber-800'
+                      : 'bg-slate-800 text-slate-400 border-slate-700'
+                  }`}
+                >
+                  {micOnly ? 'Filtro MIC Ativo' : 'Todas'}
+                </button>
               </div>
+
               <div className="px-2 mb-2">
                 <div className="relative">
                   <Search className="w-3.5 h-3.5 text-slate-500 absolute left-2 top-2" />
                   <input
                     type="text"
-                    placeholder="Filtrar Mic..."
-                    className="w-full bg-slate-950 border border-slate-800 rounded pl-7 pr-2 py-1 text-xs text-slate-200 focus:outline-none focus:border-sky-600"
+                    value={searchFilter}
+                    onChange={(e) => setSearchFilter(e.target.value)}
+                    placeholder="Filtrar classe Java..."
+                    className="w-full bg-slate-950 border border-slate-800 rounded pl-7 pr-2 py-1 text-xs text-slate-200 focus:outline-none focus:border-sky-600 placeholder:text-slate-600"
                   />
                 </div>
               </div>
+
               <ul className="text-xs space-y-0.5">
-                {[
-                  'MicSalvaDisplay',
-                  'MicConfirmaAjustes',
-                  'MicSolicitaDadosClienteAjuste',
-                  'MicAbandonaAjustes',
-                  'MicRecuperaDisplay',
-                ].map((mic) => (
+                {filteredClasses.map((item) => (
                   <li
-                    key={mic}
+                    key={item.name}
+                    onContextMenu={(e) => {
+                      e.preventDefault();
+                      handleSearchReferences(item.name);
+                    }}
                     className="px-2.5 py-1 rounded text-slate-300 hover:bg-slate-800 hover:text-sky-300 cursor-pointer flex items-center justify-between group"
-                    title={`Clique com o botão direito para buscar referências`}
+                    title={`Botão direito para: Search ExecutionFlow Diagram References`}
                   >
                     <div className="flex items-center gap-2 truncate">
                       <span className="text-sky-500 text-[10px]">⚙</span>
-                      <span className="truncate">{mic}</span>
+                      <span className="truncate font-mono">{item.name}</span>
                     </div>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleSearchReferences(item.name);
+                      }}
+                      className="opacity-0 group-hover:opacity-100 p-0.5 hover:text-sky-300 text-slate-500 transition"
+                      title="Buscar referências em diagramas"
+                    >
+                      <Search className="w-3 h-3" />
+                    </button>
                   </li>
                 ))}
               </ul>
@@ -168,7 +416,7 @@ export function App() {
         {/* Center: Canvas Area & Tab Headers */}
         <main className="flex-1 flex flex-col bg-slate-950 relative overflow-hidden">
           {/* Tabs Header */}
-          <div className="h-9 bg-slate-900/60 border-b border-slate-800 flex items-center px-2 gap-1 overflow-x-auto">
+          <div className="h-9 bg-slate-900/60 border-b border-slate-800 flex items-center px-2 gap-1 overflow-x-auto z-10">
             <div className="px-3 py-1.5 bg-slate-950 border-t-2 border-sky-500 border-x border-slate-800 rounded-t text-xs font-medium text-slate-200 flex items-center gap-2 shadow-sm">
               <FileText className="w-3.5 h-3.5 text-sky-400" />
               <span>{activeTab}</span>
@@ -176,153 +424,98 @@ export function App() {
             </div>
           </div>
 
-          {/* Interactive Canvas Canvas Mockup (Ready for React Flow) */}
-          <div className="flex-1 relative bg-radial-grid overflow-hidden flex items-center justify-center p-8">
-            <div className="w-full h-full border border-slate-800/80 rounded-lg bg-slate-950/40 relative p-8 flex flex-col justify-center items-center">
-              {/* Visual preview of nodes according to Eclipse screenshot */}
-              <div className="flex items-center gap-8 relative flex-wrap justify-center">
-                {/* Start Point */}
-                <div className="flex flex-col items-center">
-                  <div className="w-8 h-8 rounded-full bg-black border-2 border-slate-400 shadow-md flex items-center justify-center cursor-pointer hover:scale-105 transition">
-                    <div className="w-2 h-2 rounded-full bg-slate-300" />
-                  </div>
-                  <span className="text-[10px] text-slate-400 mt-1">Start Point</span>
-                </div>
-
-                <div className="w-10 border-t-2 border-dashed border-slate-500" />
-
-                {/* Executable Object 1 */}
-                <div
-                  onClick={() =>
-                    setSelectedNode({
-                      id: '1386704906523',
-                      type: 'ExecutableFlowObject',
-                      title: 'MicSalvaDisplay',
-                      className: 'com.csi.oper.pos.MicSalvaDisplay',
-                      pathKey: '1386704906523',
-                    })
-                  }
-                  className="px-4 py-2.5 rounded-md bg-[#EAF1FB] border-2 border-[#6C8EBF] text-slate-900 shadow-md cursor-pointer hover:ring-2 hover:ring-sky-400 transition min-w-[140px]"
-                >
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-amber-600 font-bold text-xs">⚙</span>
-                    <span className="font-semibold text-xs text-[#1C3D5A]">MicSalvaDisplay</span>
-                  </div>
-                </div>
-
-                <div className="flex items-center">
-                  <div className="w-12 h-0.5 bg-slate-600" />
-                  <span className="text-[9px] bg-slate-800 border border-slate-700 text-slate-300 px-1 py-0.2 rounded -ml-7 -mt-5">
-                    DEFAULT
-                  </span>
-                  <div className="w-0 h-0 border-y-4 border-y-transparent border-l-6 border-l-slate-600" />
-                </div>
-
-                {/* Executable Object 2 */}
-                <div
-                  onClick={() =>
-                    setSelectedNode({
-                      id: '1386704906524',
-                      type: 'ExecutableFlowObject',
-                      title: 'MicConfirmaAjustes',
-                      className: 'com.csi.oper.pos.MicConfirmaAjustes',
-                      pathKey: '1386704906524',
-                    })
-                  }
-                  className="px-4 py-2.5 rounded-md bg-[#EAF1FB] border-2 border-[#6C8EBF] text-slate-900 shadow-md cursor-pointer hover:ring-2 hover:ring-sky-400 transition min-w-[140px]"
-                >
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-amber-600 font-bold text-xs">⚙</span>
-                    <span className="font-semibold text-xs text-[#1C3D5A]">MicConfirmaAjustes</span>
-                  </div>
-                </div>
-
-                <div className="flex items-center">
-                  <div className="w-12 h-0.5 bg-slate-600" />
-                  <span className="text-[9px] bg-slate-800 border border-slate-700 text-slate-300 px-1 py-0.2 rounded -ml-7 -mt-5">
-                    DEFAULT
-                  </span>
-                  <div className="w-0 h-0 border-y-4 border-y-transparent border-l-6 border-l-slate-600" />
-                </div>
-
-                {/* Result Node */}
-                <div
-                  onClick={() =>
-                    setSelectedNode({
-                      id: '1386704906530',
-                      type: 'ExecutionFlowResult',
-                      title: 'FINALIZA_AJUSTES',
-                      pathKey: '1386704906530',
-                    })
-                  }
-                  className="px-4 py-1.5 rounded-full bg-[#E2F0D9] border-2 border-[#70AD47] text-[#276A3C] shadow-md cursor-pointer hover:ring-2 hover:ring-emerald-400 transition flex items-center gap-2"
-                >
-                  <span className="text-xs">🚩</span>
-                  <span className="font-bold text-xs">FINALIZA_AJUSTES</span>
-                </div>
-              </div>
-
-              {/* Sticky Note Sample */}
-              <div className="absolute bottom-6 left-6 w-60 p-3 bg-[#FFF9C4] border border-[#FBC02D] text-[#5D4037] rounded shadow-lg text-xs font-sans leading-relaxed">
-                <div className="font-bold text-[10px] text-[#8D6E63] uppercase tracking-wider mb-1 flex items-center justify-between">
-                  <span>Nota Técnica</span>
-                  <span>📌</span>
-                </div>
-                Fluxo de confirmação de ajustes de venda com retorno padrão para finalização.
-              </div>
-            </div>
+          {/* Interactive React Flow Canvas */}
+          <div className="flex-1 relative overflow-hidden">
+            <DiagramCanvas
+              initialNodes={initialNodesData}
+              initialEdges={initialEdgesData}
+              onSelectNode={handleSelectNode}
+              onContextMenuNode={handleContextMenuNode}
+            />
           </div>
 
-          {/* Bottom References Panel */}
-          <div className="h-32 bg-slate-900/90 border-t border-slate-800 p-3 flex flex-col">
-            <div className="flex items-center justify-between text-xs text-slate-400 mb-2">
-              <div className="flex items-center gap-2 font-semibold text-slate-300">
-                <Search className="w-3.5 h-3.5 text-sky-400" />
-                <span>REFERÊNCIAS CRUZADAS (Search ExecutionFlow Diagram References)</span>
+          {/* Bottom References Panel (Replica da tela "procura a classe em outros diagramas.png") */}
+          {referenceDrawer.visible && (
+            <div className="h-40 bg-slate-900 border-t border-slate-800 p-3 flex flex-col z-20 shadow-2xl transition-all">
+              <div className="flex items-center justify-between text-xs text-slate-400 mb-2 border-b border-slate-800 pb-1.5">
+                <div className="flex items-center gap-2 font-semibold text-slate-200">
+                  <Search className="w-4 h-4 text-sky-400" />
+                  <span>
+                    SEARCH EXECUTIONFLOW REFERENCES:{' '}
+                    <span className="text-sky-300 font-mono font-bold">
+                      {referenceDrawer.className}
+                    </span>
+                  </span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-[11px] text-slate-500">
+                    {referenceDrawer.results.length} arquivo(s) encontrado(s)
+                  </span>
+                  <button
+                    onClick={() => setReferenceDrawer((prev) => ({ ...prev, visible: false }))}
+                    className="p-1 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 transition"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
               </div>
-              <span className="text-[11px] text-slate-500">2 diagramas contêm a classe selecionada</span>
+              <div className="flex-1 overflow-y-auto space-y-1">
+                {referenceDrawer.results.map((ref, idx) => (
+                  <div
+                    key={idx}
+                    onClick={() => {
+                      setActiveTab(ref.diagramName);
+                      alert(`Abrindo ${ref.diagramName} e focando nó #${ref.nodePathKey}`);
+                    }}
+                    className="text-xs p-2 rounded bg-slate-950/70 hover:bg-slate-800 text-slate-300 cursor-pointer flex items-center justify-between border border-slate-800/50 group transition"
+                  >
+                    <div className="flex items-center gap-2">
+                      <FileCode className="w-3.5 h-3.5 text-sky-400" />
+                      <span className="font-mono text-sky-300 group-hover:underline">
+                        {ref.path}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded font-mono">
+                        Nó #{ref.nodePathKey}
+                      </span>
+                      <ExternalLink className="w-3 h-3 text-slate-500 group-hover:text-sky-400" />
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
-            <div className="flex-1 overflow-y-auto space-y-1">
-              <div className="text-xs p-1.5 rounded bg-slate-950/60 hover:bg-slate-800 text-slate-300 cursor-pointer flex items-center justify-between border border-slate-800/40">
-                <span className="font-mono text-sky-300">pdv/7025_AJUSTES_DURANTE_VENDA.executionflow</span>
-                <span className="text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded">Nó #1386704906523</span>
-              </div>
-              <div className="text-xs p-1.5 rounded bg-slate-950/60 hover:bg-slate-800 text-slate-300 cursor-pointer flex items-center justify-between border border-slate-800/40">
-                <span className="font-mono text-sky-300">pdv/7026_CONFIRMACAO_AJUSTES.executionflow</span>
-                <span className="text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded">Nó #1386704906523</span>
-              </div>
-            </div>
-          </div>
+          )}
         </main>
 
         {/* Right Sidebar: Palette & Properties */}
-        <aside className="w-80 bg-slate-900/95 border-l border-slate-800 flex flex-col z-10">
+        <aside className="w-80 bg-slate-900/95 border-l border-slate-800 flex flex-col z-20 shadow-lg">
           {/* Palette Section */}
           <div className="p-3 border-b border-slate-800">
             <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
               Paleta de Ferramentas
             </span>
             <div className="grid grid-cols-2 gap-2 mt-2">
-              <div className="p-2 rounded bg-slate-800/80 border border-slate-700/60 hover:border-sky-500 cursor-pointer flex items-center gap-2 text-xs text-slate-200">
-                <div className="w-3.5 h-3.5 rounded-full bg-black border border-slate-400" />
+              <div className="p-2 rounded bg-slate-800/80 border border-slate-700/60 hover:border-sky-500 cursor-pointer flex items-center gap-2 text-xs text-slate-200 transition shadow-sm">
+                <div className="w-3 h-3 rounded-full bg-black border border-slate-400" />
                 <span>Start Point</span>
               </div>
-              <div className="p-2 rounded bg-slate-800/80 border border-slate-700/60 hover:border-sky-500 cursor-pointer flex items-center gap-2 text-xs text-slate-200">
+              <div className="p-2 rounded bg-slate-800/80 border border-slate-700/60 hover:border-sky-500 cursor-pointer flex items-center gap-2 text-xs text-slate-200 transition shadow-sm">
                 <span className="text-amber-500 text-xs">⚙</span>
                 <span>Mic Action</span>
               </div>
-              <div className="p-2 rounded bg-slate-800/80 border border-slate-700/60 hover:border-sky-500 cursor-pointer flex items-center gap-2 text-xs text-slate-200">
+              <div className="p-2 rounded bg-slate-800/80 border border-slate-700/60 hover:border-sky-500 cursor-pointer flex items-center gap-2 text-xs text-slate-200 transition shadow-sm">
                 <span className="text-amber-400 text-xs">🗂</span>
                 <span>Subfluxo</span>
               </div>
-              <div className="p-2 rounded bg-slate-800/80 border border-slate-700/60 hover:border-sky-500 cursor-pointer flex items-center gap-2 text-xs text-slate-200">
+              <div className="p-2 rounded bg-slate-800/80 border border-slate-700/60 hover:border-sky-500 cursor-pointer flex items-center gap-2 text-xs text-slate-200 transition shadow-sm">
                 <span className="text-emerald-400 text-xs">🚩</span>
                 <span>Resultado</span>
               </div>
             </div>
           </div>
 
-          {/* Properties Section */}
+          {/* Properties Section (Replica fiel de "propriedades.png") */}
           <div className="flex-1 flex flex-col p-3 overflow-y-auto">
             <span className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3 flex items-center gap-1.5">
               <Settings className="w-3.5 h-3.5 text-sky-400" />
@@ -333,44 +526,60 @@ export function App() {
               <div className="space-y-3 text-xs">
                 <div>
                   <label className="text-slate-500 text-[10px] uppercase font-semibold">Tipo do Nó</label>
-                  <div className="mt-0.5 font-mono text-slate-300 bg-slate-950 p-1.5 rounded border border-slate-800">
-                    {selectedNode.type}
+                  <div className="mt-0.5 font-mono text-slate-300 bg-slate-950 p-2 rounded border border-slate-800">
+                    {selectedNode.type === 'executable'
+                      ? 'Executable Flow Object'
+                      : selectedNode.type === 'result'
+                      ? 'Execution Flow Result'
+                      : selectedNode.type === 'startPoint'
+                      ? 'Start Point'
+                      : selectedNode.type}
                   </div>
                 </div>
 
                 <div>
-                  <label className="text-slate-500 text-[10px] uppercase font-semibold">Nome da Classe / Rótulo</label>
+                  <label className="text-slate-500 text-[10px] uppercase font-semibold">
+                    Simple Class Name / Rótulo
+                  </label>
                   <input
                     type="text"
-                    value={selectedNode.title}
+                    value={(selectedNode.data?.title as string) || ''}
                     readOnly
-                    className="mt-0.5 w-full font-semibold text-slate-200 bg-slate-950 p-1.5 rounded border border-slate-800 focus:outline-none"
+                    className="mt-0.5 w-full font-semibold text-slate-200 bg-slate-950 p-2 rounded border border-slate-800 focus:outline-none"
                   />
                 </div>
 
-                {selectedNode.className && (
+                {selectedNode.data?.className && (
                   <div>
-                    <label className="text-slate-500 text-[10px] uppercase font-semibold">Pacote Java Completo</label>
-                    <div className="mt-0.5 font-mono text-[11px] text-sky-300 bg-slate-950 p-1.5 rounded border border-slate-800 break-all">
-                      {selectedNode.className}
+                    <label className="text-slate-500 text-[10px] uppercase font-semibold">
+                      Class Name (Pacote Completo)
+                    </label>
+                    <div className="mt-0.5 font-mono text-[11px] text-sky-300 bg-slate-950 p-2 rounded border border-slate-800 break-all">
+                      {selectedNode.data.className as string}
                     </div>
                   </div>
                 )}
 
                 <div>
-                  <label className="text-slate-500 text-[10px] uppercase font-semibold">Path Key (Epoch ID)</label>
-                  <div className="mt-0.5 font-mono text-[11px] text-slate-400 bg-slate-950 p-1.5 rounded border border-slate-800">
-                    {selectedNode.pathKey || '1386704906523'}
+                  <label className="text-slate-500 text-[10px] uppercase font-semibold">
+                    Path Key (Epoch ID Único)
+                  </label>
+                  <div className="mt-0.5 font-mono text-[11px] text-slate-400 bg-slate-950 p-2 rounded border border-slate-800">
+                    {(selectedNode.data?.pathKey as string) || selectedNode.id}
                   </div>
                 </div>
 
                 <div className="pt-2">
                   <button
-                    onClick={() => alert(`Buscando referências da classe ${selectedNode.title}...`)}
-                    className="w-full py-1.5 rounded bg-sky-950 hover:bg-sky-900 text-sky-300 border border-sky-800 text-xs font-medium transition flex items-center justify-center gap-1.5"
+                    onClick={() =>
+                      handleSearchReferences(
+                        (selectedNode.data?.title as string) || selectedNode.id
+                      )
+                    }
+                    className="w-full py-2 rounded bg-sky-950 hover:bg-sky-900 text-sky-300 border border-sky-800 text-xs font-medium transition flex items-center justify-center gap-1.5 shadow-sm"
                   >
-                    <Search className="w-3 h-3" />
-                    <span>Buscar em Outros Diagramas</span>
+                    <Search className="w-3.5 h-3.5" />
+                    <span>Search ExecutionFlow References...</span>
                   </button>
                 </div>
               </div>
@@ -382,6 +591,58 @@ export function App() {
           </div>
         </aside>
       </div>
+
+      {/* 3. Node Context Menu (Replica fiel de "opcoes do no.png") */}
+      {contextMenu && (
+        <div
+          style={{ top: contextMenu.y, left: contextMenu.x }}
+          className="fixed bg-slate-900 border border-slate-700 shadow-2xl rounded-md py-1.5 z-50 text-xs text-slate-200 min-w-[210px] backdrop-blur"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <button
+            onClick={() => {
+              alert('Nota adicionada ao diagrama!');
+              setContextMenu(null);
+            }}
+            className="w-full px-3 py-1.5 hover:bg-slate-800 flex items-center gap-2 text-left"
+          >
+            <span>📝</span>
+            <span>Add Note</span>
+          </button>
+          <button
+            onClick={() => {
+              handleSearchReferences(
+                (contextMenu.node?.data?.title as string) || contextMenu.node?.id || ''
+              );
+            }}
+            className="w-full px-3 py-1.5 hover:bg-slate-800 flex items-center gap-2 text-left text-sky-300 font-medium"
+          >
+            <span>🔍</span>
+            <span>Search execution flow diagram references...</span>
+          </button>
+          <button
+            onClick={() => {
+              setSelectedNode(contextMenu.node);
+              setContextMenu(null);
+            }}
+            className="w-full px-3 py-1.5 hover:bg-slate-800 flex items-center gap-2 text-left"
+          >
+            <span>📋</span>
+            <span>Show Properties View</span>
+          </button>
+          <div className="h-[1px] bg-slate-800 my-1" />
+          <button
+            onClick={() => {
+              alert('Elemento removido do modelo');
+              setContextMenu(null);
+            }}
+            className="w-full px-3 py-1.5 hover:bg-red-950 text-red-400 flex items-center gap-2 text-left"
+          >
+            <span>❌</span>
+            <span>Delete from Model</span>
+          </button>
+        </div>
+      )}
     </div>
   );
 }
