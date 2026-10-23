@@ -33,6 +33,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import { DiagramCanvas } from './components/canvas/DiagramCanvas';
+import packageJson from '../package.json';
 import type { DiagramFileInfo, JavaClassInfo, DiagramReference } from './types/workspace';
 import { XmlEngine } from './services/xmlEngine';
 import { GraphConverter } from './services/graphConverter';
@@ -1231,6 +1232,9 @@ export function App() {
           <div className="flex items-center gap-2 font-semibold text-sky-400">
             <Layers className="w-5 h-5 text-sky-400" />
             <span className="tracking-wide">CSI StateFlow Studio</span>
+            <span className="text-[11px] font-mono font-medium px-1.5 py-0.5 rounded bg-sky-950/80 text-sky-300 border border-sky-800/60 shadow-inner select-none" title={`Versão do Sistema: ${packageJson.version}`}>
+              v.{packageJson.version}
+            </span>
           </div>
 
           <div className="h-4 w-[1px] bg-slate-800 mx-2" />
