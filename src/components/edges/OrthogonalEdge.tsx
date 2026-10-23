@@ -176,7 +176,7 @@ export function OrthogonalEdge({
                   OK
                 </button>
                 <div className="flex gap-1 border-l border-slate-700 pl-1.5">
-                  {['DEFAULT', 'CONFIRMAR', 'ABANDONAR', 'SUCESSO'].map((preset) => (
+                  {['DEFAULT', 'CONFIRMAR', 'SUCESSO'].map((preset) => (
                     <button
                       key={preset}
                       type="button"

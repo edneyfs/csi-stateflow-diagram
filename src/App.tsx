@@ -1758,7 +1758,7 @@ export function App() {
                     type="text"
                     value={(selectedEdge.data?.label as string) || ''}
                     onChange={(e) => handleUpdateEdgeLabel(e.target.value)}
-                    placeholder="Ex: DEFAULT, CONFIRMAR, ABANDONAR..."
+                    placeholder="Ex: DEFAULT, CONFIRMAR, SUCESSO..."
                     className="mt-1 w-full font-mono font-bold text-sky-300 bg-slate-950 p-2 rounded border-2 border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-400 transition text-xs shadow-inner"
                   />
                 </div>
@@ -1768,7 +1768,7 @@ export function App() {
                     Resultados Rápidos CSI:
                   </label>
                   <div className="flex flex-wrap gap-1.5">
-                    {['DEFAULT', 'CONFIRMAR', 'ABANDONAR', 'SUCESSO', 'ERRO', 'CANCELAR', 'NAO_HA_AJUSTES'].map(
+                    {['DEFAULT', 'CONFIRMAR', 'SUCESSO', 'ERRO', 'CANCELAR'].map(
                       (val) => (
                         <button
                           key={val}
@@ -2179,7 +2179,7 @@ export function App() {
               <div className="px-3 py-1 text-[10px] uppercase font-semibold text-slate-500">
                 Atalhos Rápidos:
               </div>
-              {['DEFAULT', 'CONFIRMAR', 'ABANDONAR', 'SUCESSO'].map((preset) => (
+              {['DEFAULT', 'CONFIRMAR', 'SUCESSO'].map((preset) => (
                 <button
                   key={preset}
                   onClick={() => {
