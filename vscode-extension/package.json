@@ -2,7 +2,7 @@
   "name": "csi-stateflow-vscode",
   "displayName": "CSI StateFlow Visual Studio",
   "description": "Editor visual de diagramas CSI / P2K (.executionflow e .stateflow) em fonte único para o VS Code",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "publisher": "edneysiqueira",
   "engines": {
     "vscode": "^1.85.0"

@@ -7,83 +7,159 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="styles.css" />
 </head>
-<body class="bg-slate-950 text-slate-100 font-sans antialiased min-h-screen">
+<body class="bg-slate-950 text-slate-100 font-sans antialiased min-h-screen selection:bg-sky-500/30 selection:text-sky-200">
   <!-- Top Banner -->
-  <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-50">
+  <header class="border-b border-slate-800 bg-slate-900/90 backdrop-blur sticky top-0 z-50 shadow-md">
     <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
       <div class="flex items-center gap-3">
-        <span class="text-2xl">⚙️</span>
+        <div class="w-9 h-9 rounded-lg bg-sky-950 border border-sky-800 flex items-center justify-center text-sky-400 font-bold shadow-inner">
+          ⚙️
+        </div>
         <div>
-          <h1 class="text-lg font-bold text-sky-400">CSI StateFlow Studio</h1>
+          <div class="flex items-center gap-2">
+            <h1 class="text-base font-bold text-sky-400 tracking-tight">CSI StateFlow Studio</h1>
+            <span class="text-[11px] font-mono font-semibold px-2 py-0.5 rounded bg-sky-950/90 text-sky-300 border border-sky-800/80">
+              v.0.1.10
+            </span>
+          </div>
           <p class="text-xs text-slate-400">Central de Ajuda, Guias Interativos e Referência Técnica Viva</p>
         </div>
       </div>
-      <div class="flex items-center gap-4 text-sm">
-        <span class="px-2.5 py-1 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-800 text-xs font-semibold">
-          ● Versão 1.0.0 Autônoma (100% Sem Eclipse)
+      <div class="flex items-center gap-3 text-xs">
+        <span class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-950/80 text-emerald-400 border border-emerald-800/80 font-semibold shadow-sm">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          23/23 Testes Automatizados Aprovados
+        </span>
+        <span class="px-2.5 py-1 rounded-full bg-sky-950/80 text-sky-300 border border-sky-800/80 font-mono font-medium">
+          Tri-Híbrido: Web • Desktop • VS Code
         </span>
       </div>
     </div>
   </header>
 
   <!-- Main Container -->
-  <div class="max-w-7xl mx-auto px-6 py-10 grid grid-cols-1 md:grid-cols-4 gap-8">
+  <div class="max-w-7xl mx-auto px-6 py-8 grid grid-cols-1 md:grid-cols-4 gap-8">
     <!-- Sidebar Navigation -->
     <aside class="md:col-span-1 space-y-6">
-      <div class="p-4 rounded-xl bg-slate-900 border border-slate-800 sticky top-24">
-        <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Tópicos de Ajuda</h2>
-        <nav class="space-y-1.5 text-sm">
-          <a href="#visao-geral" class="block px-3 py-2 rounded-lg bg-sky-950 text-sky-300 font-medium border border-sky-800/50">1. Visão Geral</a>
-          <a href="#abrir-diagrama" class="block px-3 py-2 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition">2. Workspace & Diagramas</a>
-          <a href="#busca-referencias" class="block px-3 py-2 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition">3. Busca Cruzada (MIC*)</a>
-          <a href="#modelar-fluxo" class="block px-3 py-2 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition">4. Canvas & Propriedades</a>
-          <a href="#salvar-xml" class="block px-3 py-2 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition">5. Compatibilidade XML</a>
-          <a href="#atalhos" class="block px-3 py-2 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition">6. Teclas de Atalho</a>
+      <div class="p-4 rounded-xl bg-slate-900/90 border border-slate-800 sticky top-24 shadow-xl">
+        <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3 flex items-center justify-between">
+          <span>Tópicos de Ajuda</span>
+          <span class="text-[10px] bg-slate-800 px-1.5 py-0.5 rounded text-slate-400">8 seções</span>
+        </h2>
+        <nav class="space-y-1.5 text-xs">
+          <a href="#visao-geral" class="block px-3 py-2 rounded-lg bg-sky-950 text-sky-300 font-medium border border-sky-800/50 hover:bg-sky-900/60 transition">
+            1. Visão Geral & Arquitetura
+          </a>
+          <a href="#workspace" class="block px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition">
+            2. Workspace & Varredura Real
+          </a>
+          <a href="#transicoes" class="block px-3 py-2 rounded-lg text-amber-300 hover:bg-slate-800 hover:text-amber-200 transition font-medium flex items-center justify-between">
+            <span>3. Edição de Transições</span>
+            <span class="text-[9px] bg-amber-950/80 text-amber-400 border border-amber-800 px-1 rounded">Novo</span>
+          </a>
+          <a href="#canvas" class="block px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition">
+            4. Canvas & Propriedades
+          </a>
+          <a href="#busca-referencias" class="block px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition">
+            5. Busca Cruzada (MIC*)
+          </a>
+          <a href="#vscode-extension" class="block px-3 py-2 rounded-lg text-sky-300 hover:bg-slate-800 hover:text-sky-200 transition font-medium flex items-center justify-between">
+            <span>6. Extensão para VS Code</span>
+            <span class="text-[9px] bg-sky-950/80 text-sky-400 border border-sky-800 px-1 rounded">Novo</span>
+          </a>
+          <a href="#seguranca-xml" class="block px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition">
+            7. Backup (.bak) & XML Seguro
+          </a>
+          <a href="#atalhos" class="block px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition">
+            8. Teclas de Atalho & Gestos
+          </a>
         </nav>
       </div>
     </aside>
 
     <!-- Main Content -->
-    <main class="md:col-span-3 space-y-12">
-      <!-- Section 1 -->
-      <section id="visao-geral" class="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-4">
-        <h2 class="text-xl font-bold text-white flex items-center gap-2">
-          <span>🚀</span> 1. Visão Geral do CSI StateFlow Studio
-        </h2>
+    <main class="md:col-span-3 space-y-10">
+      <!-- Section 1: Visão Geral -->
+      <section id="visao-geral" class="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-5 shadow-lg">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+          <h2 class="text-xl font-bold text-white flex items-center gap-2">
+            <span>🚀</span> 1. Visão Geral & Plataforma Tri-Híbrida
+          </h2>
+          <span class="text-xs px-2.5 py-1 rounded bg-sky-950 text-sky-300 font-mono border border-sky-800">
+            Fonte Único 100%
+          </span>
+        </div>
         <p class="text-slate-300 text-sm leading-relaxed">
-          O <strong>CSI StateFlow Studio</strong> é uma ferramenta Desktop independente que substitui com fidelidade visual absoluta o antigo plugin Eclipse GMF de 2010. Ele permite criar, visualizar e editar os fluxos de execução (<code class="text-sky-300 bg-slate-950 px-1.5 py-0.5 rounded">.executionflow</code>) e máquinas de estado (<code class="text-sky-300 bg-slate-950 px-1.5 py-0.5 rounded">.stateflow</code>), gerando XML 100% compatível com a máquina de estados legado do P2K.
+          O <strong>CSI StateFlow Studio</strong> é uma plataforma moderna e autônoma desenvolvida para substituir com fidelidade visual absoluta o antigo plugin Eclipse GMF de 2010. Construído em arquitetura <strong>tri-híbrida de fonte único</strong>, a mesma base de código React e os motores XML/Graph rodam transparentemente na Web, no Desktop e no VS Code.
         </p>
-        <div class="p-4 rounded-xl bg-slate-950/80 border border-slate-800 grid grid-cols-1 sm:grid-cols-4 gap-4 text-center">
-          <div class="p-3 rounded-lg bg-slate-900/60 border border-slate-800">
-            <span class="text-2xl font-bold text-emerald-400">100%</span>
-            <p class="text-xs text-slate-400 mt-1">Testes Passando (9/9)</p>
+
+        <!-- Métricas em Grid -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+          <div class="p-3.5 rounded-xl bg-slate-950 border border-slate-800">
+            <span class="text-2xl font-bold text-emerald-400 font-mono">23 / 23</span>
+            <p class="text-[11px] text-slate-400 mt-1">Testes Passando (100%)</p>
           </div>
-          <div class="p-3 rounded-lg bg-slate-900/60 border border-slate-800">
-            <span class="text-2xl font-bold text-sky-400">146</span>
-            <p class="text-xs text-slate-400 mt-1">Classes Java MIC* Indexadas</p>
+          <div class="p-3.5 rounded-xl bg-slate-950 border border-slate-800">
+            <span class="text-2xl font-bold text-sky-400 font-mono">2.269+</span>
+            <p class="text-[11px] text-slate-400 mt-1">Classes Java MIC* Suportadas</p>
           </div>
-          <div class="p-3 rounded-lg bg-slate-900/60 border border-slate-800">
-            <span class="text-2xl font-bold text-purple-400">100%</span>
-            <p class="text-xs text-slate-400 mt-1">Compatibilidade XML</p>
+          <div class="p-3.5 rounded-xl bg-slate-950 border border-slate-800">
+            <span class="text-2xl font-bold text-purple-400 font-mono">CRLF</span>
+            <p class="text-[11px] text-slate-400 mt-1">XML 100% Compatível P2K</p>
           </div>
-          <div class="p-3 rounded-lg bg-slate-900/60 border border-slate-800">
-            <span class="text-2xl font-bold text-amber-400">0</span>
-            <p class="text-xs text-slate-400 mt-1">Dependência do Eclipse</p>
+          <div class="p-3.5 rounded-xl bg-slate-950 border border-slate-800">
+            <span class="text-2xl font-bold text-amber-400 font-mono">0</span>
+            <p class="text-[11px] text-slate-400 mt-1">Dependência do Eclipse</p>
+          </div>
+        </div>
+
+        <!-- Matriz de Ambientes -->
+        <div class="border border-slate-800 rounded-xl overflow-hidden bg-slate-950/70">
+          <div class="p-3 bg-slate-950 border-b border-slate-800 font-semibold text-xs text-slate-300 flex items-center gap-2">
+            <span>🌐</span> Matriz de Recursos por Ambiente de Execução
+          </div>
+          <div class="divide-y divide-slate-800/80 text-xs">
+            <div class="p-3 flex items-start justify-between gap-4">
+              <div class="space-y-0.5">
+                <span class="font-bold text-sky-300">Modo Web (GitHub Pages / Localhost)</span>
+                <p class="text-slate-400 text-[11px]">Opera no navegador via W3C File System Access API com reconexão em 1 clique via IndexedDB e geração de backups locais.</p>
+              </div>
+              <span class="px-2 py-0.5 rounded bg-sky-950 text-sky-400 font-mono border border-sky-800 shrink-0">W3C API</span>
+            </div>
+            <div class="p-3 flex items-start justify-between gap-4">
+              <div class="space-y-0.5">
+                <span class="font-bold text-indigo-300">Modo Desktop (Electron)</span>
+                <p class="text-slate-400 text-[11px]">Aplicativo executável desktop com diálogos nativos do Windows/Linux e leitura de diretórios sem restrições de sandbox.</p>
+              </div>
+              <span class="px-2 py-0.5 rounded bg-indigo-950 text-indigo-400 font-mono border border-indigo-800 shrink-0">Node.js fs</span>
+            </div>
+            <div class="p-3 flex items-start justify-between gap-4">
+              <div class="space-y-0.5">
+                <span class="font-bold text-emerald-300">Modo Extensão VS Code (CustomTextEditor)</span>
+                <p class="text-slate-400 text-[11px]">Abre arquivos .executionflow e .stateflow diretamente como abas nativas, ocupando 100% da tela útil com auto-sync em tempo real e Ctrl+S.</p>
+              </div>
+              <span class="px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 font-mono border border-emerald-800 shrink-0">VSIX Extension</span>
+            </div>
           </div>
         </div>
       </section>
 
-      <!-- Section 2: Demo GIF for Opening Diagram -->
-      <section id="abrir-diagrama" class="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-4">
-        <div class="flex items-center justify-between">
+      <!-- Section 2: Workspace & Varredura Real -->
+      <section id="workspace" class="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-4 shadow-lg">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
           <h2 class="text-xl font-bold text-white flex items-center gap-2">
-            <span>📑</span> 2. Seleção de Workspace & Painel "Todos os Diagramas"
+            <span>📑</span> 2. Workspace & Varredura Real de Diagramas e Classes
           </h2>
-          <span class="text-[11px] px-2.5 py-0.5 rounded bg-sky-950 text-sky-400 border border-sky-800">Fluxo Feliz E2E</span>
+          <span class="text-[11px] px-2.5 py-0.5 rounded bg-sky-950 text-sky-400 border border-sky-800">Varredura Recursiva</span>
         </div>
         <p class="text-slate-300 text-sm leading-relaxed">
-          Ao abrir o estúdio, é solicitada a pasta raiz do workspace. O sistema varre recursivamente todo o diretório e exibe no <strong>painel lateral esquerdo uma área dedicada com TODOS os arquivos de diagramas</strong> (<code class="text-sky-300">.executionflow</code> e <code class="text-amber-300">.stateflow</code>), com contagem em tempo real, badges de tipo, pasta de origem e filtros rápidos.
+          Ao selecionar a pasta raiz do seu projeto corporativo (ex: <code>p2k-centauro-trunk</code>), o sistema realiza a leitura em tempo real de todo o workspace:
         </p>
+        <ul class="text-xs text-slate-300 space-y-2 list-disc list-inside">
+          <li><strong>Todos os Diagramas:</strong> indexação de centenas de arquivos <code class="text-sky-300">.executionflow</code> e <code class="text-amber-300">.stateflow</code>, organizados por pasta e tipo, com busca instantânea e filtros por fluxo semântico.</li>
+          <li><strong>Todas as Classes MIC*:</strong> varredura real nos diretórios de fontes Java (ex: <code>fonte/projetos/</code>), detectando o nome simples da classe e o pacote completo.</li>
+          <li><strong>Reconexão em 1 Clique:</strong> no navegador Web, a pasta é memorizada no IndexedDB seguro do navegador. Ao reabrir a página, basta clicar no banner superior para restabelecer a conexão sem precisar selecionar o diretório novamente.</li>
+        </ul>
         <div class="rounded-xl border border-slate-800 bg-slate-950 p-2 shadow-2xl overflow-hidden">
           <img
             src="assets/gifs/abrir-diagrama.gif"
@@ -93,36 +169,87 @@
         </div>
       </section>
 
-      <!-- Section 3: Demo GIF for Cross References -->
-      <section id="busca-referencias" class="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-4">
-        <div class="flex items-center justify-between">
+      <!-- Section 3: Edição de Transições (DESTAQUE RECENTE) -->
+      <section id="transicoes" class="p-6 rounded-2xl bg-slate-900 border border-amber-800/50 space-y-5 shadow-xl relative overflow-hidden">
+        <div class="absolute -right-10 -top-10 w-40 h-40 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
           <h2 class="text-xl font-bold text-white flex items-center gap-2">
-            <span>🔍</span> 3. Busca Cruzada de Referências de Classes (MIC*)
+            <span>⚡</span> 3. Edição Completa de Transições (Rótulos das Arestas)
           </h2>
-          <span class="text-[11px] px-2.5 py-0.5 rounded bg-sky-950 text-sky-400 border border-sky-800">Fluxo Feliz E2E</span>
+          <span class="text-xs px-2.5 py-1 rounded bg-amber-950 text-amber-300 font-semibold border border-amber-800">
+            Aperfeiçoado nas Últimas Rodadas
+          </span>
         </div>
+
         <p class="text-slate-300 text-sm leading-relaxed">
-          Replicação fiel e direta da funcionalidade <em>"Search ExecutionFlow Diagram References..."</em> do Eclipse: clique com o botão direito em qualquer classe Java <code class="text-amber-300">MIC*</code> ou em um nó no canvas. O estúdio abre a gaveta inferior destacando todos os diagramas que contêm o nó e o seu respectivo <code>pathKey</code>.
+          No CSI, a saída e condição de avanço de um nó para outro é definida pelo <strong>rótulo da transição</strong> (ex: <code class="text-sky-300 font-mono">DEFAULT</code>, <code class="text-emerald-300 font-mono">CONFIRMAR</code>, <code class="text-sky-300 font-mono">SUCESSO</code>). Agora o estúdio oferece três maneiras fluidas e coordenadas para alterar esse valor:
         </p>
-        <div class="rounded-xl border border-slate-800 bg-slate-950 p-2 shadow-2xl overflow-hidden">
-          <img
-            src="assets/gifs/busca-referencias.gif"
-            alt="Demonstração animada: Busca cruzada de referências de classes nos diagramas"
-            class="rounded-lg w-full border border-slate-800 object-cover"
-          />
+
+        <!-- 3 Formas de Edição -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
+            <div class="flex items-center gap-2 text-sky-400 font-bold text-xs">
+              <span>🖱️</span> 1. Duplo-Clique Inline
+            </div>
+            <p class="text-[11px] text-slate-300 leading-relaxed">
+              Dê um <strong>duplo-clique</strong> diretamente no badge da transição sobre o canvas. Um input flutuante se abre com foco automático e texto selecionado. Digite o novo nome e pressione <kbd class="px-1 py-0.5 rounded bg-slate-800 text-[10px] font-mono">Enter</kbd> ou clique em <strong>OK</strong>.
+            </p>
+            <div class="pt-1 flex gap-1">
+              <span class="px-1.5 py-0.5 rounded bg-slate-800 text-[9px] font-mono text-slate-300">DEFAULT</span>
+              <span class="px-1.5 py-0.5 rounded bg-slate-800 text-[9px] font-mono text-slate-300">CONFIRMAR</span>
+              <span class="px-1.5 py-0.5 rounded bg-slate-800 text-[9px] font-mono text-slate-300">SUCESSO</span>
+            </div>
+          </div>
+
+          <div class="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
+            <div class="flex items-center gap-2 text-amber-400 font-bold text-xs">
+              <span>📋</span> 2. Menu de Contexto
+            </div>
+            <p class="text-[11px] text-slate-300 leading-relaxed">
+              Clique com o <strong>botão direito</strong> em qualquer transição para abrir o menu contextual seguro com as opções:
+            </p>
+            <ul class="text-[11px] text-slate-400 space-y-1 list-disc list-inside">
+              <li><strong class="text-slate-200">✏️ Editar no Canvas (Inline)</strong></li>
+              <li><strong class="text-slate-200">📋 Editar em Propriedades</strong> (abre e seleciona o input lateral)</li>
+              <li><strong class="text-slate-200">Atalhos rápidos de presets</strong></li>
+              <li><strong class="text-red-300">❌ Excluir Transição</strong></li>
+            </ul>
+          </div>
+
+          <div class="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
+            <div class="flex items-center gap-2 text-emerald-400 font-bold text-xs">
+              <span>🛠️</span> 3. Painel de Propriedades
+            </div>
+            <p class="text-[11px] text-slate-300 leading-relaxed">
+              Ao selecionar uma transição, a aba lateral direita exibe os detalhes completos da conexão: Nós de Origem e Destino, Campo de Edição do Rótulo com autocomplete e botões de atalho:
+            </p>
+            <div class="flex flex-wrap gap-1 pt-1">
+              <span class="px-1.5 py-0.5 rounded bg-sky-950 text-[9px] font-mono text-sky-300 border border-sky-800">DEFAULT</span>
+              <span class="px-1.5 py-0.5 rounded bg-sky-950 text-[9px] font-mono text-sky-300 border border-sky-800">CONFIRMAR</span>
+              <span class="px-1.5 py-0.5 rounded bg-sky-950 text-[9px] font-mono text-sky-300 border border-sky-800">SUCESSO</span>
+              <span class="px-1.5 py-0.5 rounded bg-sky-950 text-[9px] font-mono text-sky-300 border border-sky-800">ERRO</span>
+              <span class="px-1.5 py-0.5 rounded bg-sky-950 text-[9px] font-mono text-sky-300 border border-sky-800">CANCELAR</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-3 rounded-lg bg-sky-950/60 border border-sky-800/70 text-xs text-sky-200 flex items-center gap-2">
+          <span class="text-base">💡</span>
+          <span><strong>Proteção de Seleção:</strong> Foi adicionada proteção de debounce anti-deseleção (400ms) que impede que cliques em botões do menu ou transições fechem a visualização de propriedades por acidente.</span>
         </div>
       </section>
 
-      <!-- Section 4: Demo GIF for Modeling -->
-      <section id="modelar-fluxo" class="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-4">
-        <div class="flex items-center justify-between">
+      <!-- Section 4: Modelagem no Canvas -->
+      <section id="canvas" class="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-4 shadow-lg">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
           <h2 class="text-xl font-bold text-white flex items-center gap-2">
             <span>🎨</span> 4. Modelagem no Canvas & Painel de Propriedades
           </h2>
-          <span class="text-[11px] px-2.5 py-0.5 rounded bg-sky-950 text-sky-400 border border-sky-800">Fluxo Feliz E2E</span>
+          <span class="text-[11px] px-2.5 py-0.5 rounded bg-sky-950 text-sky-400 border border-sky-800">Fidelidade GMF</span>
         </div>
         <p class="text-slate-300 text-sm leading-relaxed">
-          Visualização limpa e fluída baseada em nós React Flow: nós de Início (círculo preto), Ações MIC (caixas azuis com engrenagem), Subfluxos (ícone de diagrama) e Resultados (badges verdes). A seleção de qualquer nó atualiza instantaneamente o inspetor lateral de propriedades (Simple Class Name, Pacote Completo e PathKey).
+          Visualização limpa e fluída baseada em nós React Flow: nós de Início (círculo preto), Ações MIC (caixas azuis com engrenagem), Subfluxos (ícone amarelo de execução) e Resultados (badges verdes). A seleção de qualquer nó atualiza instantaneamente o inspetor lateral de propriedades (Simple Class Name, Pacote Completo e PathKey).
         </p>
         <div class="rounded-xl border border-slate-800 bg-slate-950 p-2 shadow-2xl overflow-hidden">
           <img
@@ -133,51 +260,155 @@
         </div>
       </section>
 
-      <!-- Section 5: Demo GIF for XML Saving -->
-      <section id="salvar-xml" class="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-4">
-        <div class="flex items-center justify-between">
+      <!-- Section 5: Busca Cruzada -->
+      <section id="busca-referencias" class="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-4 shadow-lg">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
           <h2 class="text-xl font-bold text-white flex items-center gap-2">
-            <span>💾</span> 5. Compatibilidade Absoluta com XML Legado
+            <span>🔍</span> 5. Busca Cruzada de Referências de Classes (MIC*)
           </h2>
-          <span class="text-[11px] px-2.5 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800">100% Round-Trip</span>
+          <span class="text-[11px] px-2.5 py-0.5 rounded bg-sky-950 text-sky-400 border border-sky-800">Equivalente Eclipse</span>
         </div>
         <p class="text-slate-300 text-sm leading-relaxed">
-          O serializador respeita estritamente os schemas EMF originais (<code class="text-sky-300">http:///com/csi/gmf/executionflow.ecore</code> e <code class="text-sky-300">stateflow.ecore</code>), preservando os atributos <code>pathKey</code> (ID de epoch de 13 dígitos) e toda a hierarquia consumida pela máquina de estados do P2K em produção.
+          Replicação fiel e direta da funcionalidade <em>"Search ExecutionFlow Diagram References..."</em> do Eclipse: clique com o botão direito em qualquer classe Java <code class="text-amber-300">MIC*</code> ou em um nó no canvas. O estúdio abre a gaveta inferior destacando todos os diagramas que contêm o nó e o seu respectivo <code>pathKey</code> com abertura em 1 clique.
         </p>
         <div class="rounded-xl border border-slate-800 bg-slate-950 p-2 shadow-2xl overflow-hidden">
           <img
-            src="assets/gifs/salvar-xml.gif"
-            alt="Demonstração animada: Salvamento de XML no padrão legado do P2K"
+            src="assets/gifs/busca-referencias.gif"
+            alt="Demonstração animada: Busca cruzada de referências de classes nos diagramas"
             class="rounded-lg w-full border border-slate-800 object-cover"
           />
         </div>
       </section>
 
-      <!-- Section 6: Atalhos -->
-      <section id="atalhos" class="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-4">
-        <h2 class="text-xl font-bold text-white flex items-center gap-2">
-          <span>⌨️</span> 6. Teclas de Atalho de Alta Produtividade
-        </h2>
+      <!-- Section 6: Extensão para VS Code (NOVO) -->
+      <section id="vscode-extension" class="p-6 rounded-2xl bg-slate-900 border border-sky-800/60 space-y-5 shadow-xl relative overflow-hidden">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+          <h2 class="text-xl font-bold text-white flex items-center gap-2">
+            <span>💻</span> 6. Extensão Oficial para Visual Studio Code
+          </h2>
+          <span class="text-xs px-2.5 py-1 rounded bg-sky-950 text-sky-300 font-semibold border border-sky-800">
+            Nova Extensão VSIX
+          </span>
+        </div>
+
+        <p class="text-slate-300 text-sm leading-relaxed">
+          Para desenvolvedores que trabalham no VS Code, o CSI StateFlow Studio pode rodar como uma <strong>extensão nativa (<code class="text-sky-300 font-mono">CustomTextEditorProvider</code>)</strong>. Desta forma, o desenvolvedor não precisa alternar para outra janela ou navegador.
+        </p>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+          <div class="p-3.5 rounded-xl bg-slate-950 border border-slate-800 space-y-1">
+            <span class="font-bold text-sky-400 flex items-center gap-1.5">
+              <span>🖥️</span> 100% de Largura Útil
+            </span>
+            <p class="text-slate-400 text-[11px]">A barra lateral de arquivos do app é ocultada, já que o Explorer nativo do VS Code assume a navegação.</p>
+          </div>
+          <div class="p-3.5 rounded-xl bg-slate-950 border border-slate-800 space-y-1">
+            <span class="font-bold text-emerald-400 flex items-center gap-1.5">
+              <span>🔄</span> Sincronização e Ctrl+S
+            </span>
+            <p class="text-slate-400 text-[11px]">Modificações no canvas marcam a aba como alterada (●). O atalho Ctrl+S nativo e o Git Diff funcionam normalmente.</p>
+          </div>
+          <div class="p-3.5 rounded-xl bg-slate-950 border border-slate-800 space-y-1">
+            <span class="font-bold text-amber-400 flex items-center gap-1.5">
+              <span>🔍</span> Scan de Classes MIC
+            </span>
+            <p class="text-slate-400 text-[11px]">O host do VS Code varre automaticamente em background os arquivos Mic*.java do projeto aberto.</p>
+          </div>
+        </div>
+
+        <!-- Como Instalar a Extensão -->
+        <div class="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
+          <span class="font-semibold text-xs text-slate-200">Como Instalar no VS Code:</span>
+          <div class="p-2.5 bg-slate-900 rounded-lg border border-slate-800 font-mono text-xs text-sky-300 flex items-center justify-between">
+            <code>code --install-extension vscode-extension/csi-stateflow-vscode-0.1.10.vsix</code>
+          </div>
+          <p class="text-[11px] text-slate-400">
+            Ou abra o VS Code, pressione <kbd class="px-1 py-0.5 bg-slate-800 rounded font-mono">Ctrl + Shift + P</kbd>, digite <em>"Extensions: Install from VSIX..."</em> e selecione o arquivo gerado na pasta <code>vscode-extension/</code>.
+          </p>
+        </div>
+
+        <div class="p-3 rounded-lg bg-slate-950 border border-slate-800 text-xs text-slate-300 flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span>🌐</span>
+            <span><strong>Dica de Desenvolvimento:</strong> Teste o visual do modo VS Code diretamente no seu navegador adicionando <code class="text-sky-300 font-mono">?env=vscode</code> na URL.</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 7: Backup e XML Seguro -->
+      <section id="seguranca-xml" class="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-4 shadow-lg">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+          <h2 class="text-xl font-bold text-white flex items-center gap-2">
+            <span>💾</span> 7. Gravação Atômica com Backup Automático (.bak) & XML Seguro
+          </h2>
+          <span class="text-[11px] px-2.5 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800">100% Round-Trip</span>
+        </div>
+        <p class="text-slate-300 text-sm leading-relaxed">
+          Para garantir total segurança ao modificar arquivos de produção de grande porte, o serializador XML opera com padrões industriais rigorosos:
+        </p>
+        <ul class="text-xs text-slate-300 space-y-2 list-disc list-inside">
+          <li><strong>Backup Automático (.bak):</strong> antes de gravar qualquer alteração em disco, o sistema gera automaticamente uma cópia de segurança idêntica com extensão <code>.bak</code> no mesmo diretório.</li>
+          <li><strong>Padronização CRLF Windows:</strong> todo arquivo XML é salvo obrigatoriamente com quebra de linha <code class="text-sky-300 font-mono">\r\n</code>, garantindo total conformidade com a máquina de estados P2K legada e com o Eclipse.</li>
+          <li><strong>PathKey Determinístico de 13 Dígitos:</strong> todo nó ou resultado criado recebe um identificador baseado no timestamp Epoch em milissegundos, exatamente idêntico ao gerado pelo GMF.</li>
+        </ul>
+        <div class="rounded-xl border border-slate-800 bg-slate-950 p-2 shadow-2xl overflow-hidden">
+          <img
+            src="assets/gifs/salvar-xml.gif"
+            alt="Demonstração animada: Salvamento de XML com backup no padrão legado do P2K"
+            class="rounded-lg w-full border border-slate-800 object-cover"
+          />
+        </div>
+      </section>
+
+      <!-- Section 8: Atalhos de Teclado & Gestos -->
+      <section id="atalhos" class="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-4 shadow-lg">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+          <h2 class="text-xl font-bold text-white flex items-center gap-2">
+            <span>⌨️</span> 8. Teclas de Atalho de Alta Produtividade & Gestos no Canvas
+          </h2>
+          <span class="text-xs px-2.5 py-0.5 rounded bg-slate-800 text-slate-300 font-mono">Atalhos</span>
+        </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
           <div class="p-3 rounded-lg bg-slate-950 border border-slate-800 flex items-center justify-between">
-            <span class="text-slate-300">Salvar Diagrama Ativo</span>
+            <span class="text-slate-300">Editar Rótulo de Transição Inline</span>
+            <kbd class="px-2 py-1 rounded bg-slate-800 font-mono text-amber-400">Duplo-Clique no Rótulo</kbd>
+          </div>
+          <div class="p-3 rounded-lg bg-slate-950 border border-slate-800 flex items-center justify-between">
+            <span class="text-slate-300">Menu Contextual (Nós e Arestas)</span>
+            <kbd class="px-2 py-1 rounded bg-slate-800 font-mono text-amber-400">Botão Direito</kbd>
+          </div>
+          <div class="p-3 rounded-lg bg-slate-950 border border-slate-800 flex items-center justify-between">
+            <span class="text-slate-300">Salvar XML (ou Sync VS Code)</span>
             <kbd class="px-2 py-1 rounded bg-slate-800 font-mono text-sky-400">Ctrl + S</kbd>
           </div>
           <div class="p-3 rounded-lg bg-slate-950 border border-slate-800 flex items-center justify-between">
-            <span class="text-slate-300">Buscar no Diagrama</span>
+            <span class="text-slate-300">Buscar no Diagrama / Classes</span>
             <kbd class="px-2 py-1 rounded bg-slate-800 font-mono text-sky-400">Ctrl + F</kbd>
           </div>
           <div class="p-3 rounded-lg bg-slate-950 border border-slate-800 flex items-center justify-between">
-            <span class="text-slate-300">Busca Global de Referências</span>
-            <kbd class="px-2 py-1 rounded bg-slate-800 font-mono text-sky-400">Ctrl + Shift + F</kbd>
+            <span class="text-slate-300">Excluir Nó ou Transição</span>
+            <kbd class="px-2 py-1 rounded bg-slate-800 font-mono text-red-400">Delete / Backspace</kbd>
           </div>
           <div class="p-3 rounded-lg bg-slate-950 border border-slate-800 flex items-center justify-between">
             <span class="text-slate-300">Pan Fluído pelo Canvas</span>
             <kbd class="px-2 py-1 rounded bg-slate-800 font-mono text-sky-400">Espaço + Arrastar</kbd>
           </div>
+          <div class="p-3 rounded-lg bg-slate-950 border border-slate-800 flex items-center justify-between">
+            <span class="text-slate-300">Zoom Fluído In / Out</span>
+            <kbd class="px-2 py-1 rounded bg-slate-800 font-mono text-sky-400">Scroll do Mouse</kbd>
+          </div>
+          <div class="p-3 rounded-lg bg-slate-950 border border-slate-800 flex items-center justify-between">
+            <span class="text-slate-300">Centralizar e Ajustar Visualização</span>
+            <kbd class="px-2 py-1 rounded bg-slate-800 font-mono text-sky-400">Botão Fit View (Canvas)</kbd>
+          </div>
         </div>
       </section>
     </main>
   </div>
+
+  <!-- Footer -->
+  <footer class="border-t border-slate-800 py-6 text-center text-xs text-slate-500 bg-slate-950">
+    <p>CSI StateFlow Studio &copy; 2026 • Ferramenta Livre de Licenças Eclipse • Edney Siqueira</p>
+  </footer>
 </body>
 </html>
