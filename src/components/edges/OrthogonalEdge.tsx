@@ -31,7 +31,10 @@ export function OrthogonalEdge({
   const label = (data?.label as string) || '';
   const isStartLink = Boolean(data?.isStartLink);
   const displayLabel = label || (isStartLink ? '' : 'DEFAULT');
-  const [isEditing, setIsEditing] = useState(false);
+  const isEditingProp = Boolean(data?.isEditingInline);
+  const [internalEditing, setInternalEditing] = useState(false);
+  const isEditing = isEditingProp || internalEditing;
+
   const [editVal, setEditVal] = useState(displayLabel);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -63,20 +66,34 @@ export function OrthogonalEdge({
     }
   };
 
+  const handleStartEditing = () => {
+    setInternalEditing(true);
+    if (typeof (data as any)?.onStartInlineEdit === 'function') {
+      (data as any).onStartInlineEdit();
+    }
+    if (typeof (data as any)?.onSelect === 'function') {
+      (data as any).onSelect();
+    }
+  };
+
+  const handleStopEditing = () => {
+    setInternalEditing(false);
+    if (typeof (data as any)?.onStopInlineEdit === 'function') {
+      (data as any).onStopInlineEdit();
+    }
+  };
+
   const handleDoubleClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     if (!isStartLink) {
-      setIsEditing(true);
-      if (typeof (data as any)?.onSelect === 'function') {
-        (data as any).onSelect();
-      }
+      handleStartEditing();
     }
   };
 
   const handleCommit = (newVal?: string) => {
     const finalVal = (newVal !== undefined ? newVal : editVal).trim();
-    setIsEditing(false);
+    handleStopEditing();
     if (finalVal && finalVal !== displayLabel && typeof (data as any)?.onUpdateLabel === 'function') {
       (data as any).onUpdateLabel(finalVal);
     }
@@ -89,7 +106,7 @@ export function OrthogonalEdge({
     } else if (e.key === 'Escape') {
       e.stopPropagation();
       setEditVal(displayLabel);
-      setIsEditing(false);
+      handleStopEditing();
     }
   };
 
@@ -126,7 +143,7 @@ export function OrthogonalEdge({
                 ? 'bg-sky-600 text-white border-2 border-sky-300 ring-4 ring-sky-400/40 shadow-sky-500/40 scale-110 z-30'
                 : 'bg-slate-900/90 border border-slate-600 text-slate-200 hover:border-sky-400 hover:text-sky-300 hover:bg-slate-800'
             }`}
-            title="Duplo clique: editar na tela | Clique direito: editar em Propriedades"
+            title="Duplo clique: editar na tela | Clique direito: opções de edição"
           >
             {isEditing ? (
               <div

@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import {
   Node,
   Edge,
@@ -297,6 +297,8 @@ export function App() {
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(sampleNodes[1]?.id || null);
   const [selectedNode, setSelectedNode] = useState<Node | null>(sampleNodes[1]);
   const [selectedEdge, setSelectedEdge] = useState<Edge | null>(null);
+  const [editingEdgeId, setEditingEdgeId] = useState<string | null>(null);
+  const edgeLabelInputRef = useRef<HTMLInputElement>(null);
   const [isAutocompleteOpen, setIsAutocompleteOpen] = useState<boolean>(false);
 
   const activeNode = useMemo(() => {
@@ -1574,6 +1576,9 @@ export function App() {
               onSelectEdge={handleSelectEdge}
               selectedEdgeId={selectedEdge?.id}
               selectedNodeId={selectedNodeId}
+              editingEdgeId={editingEdgeId}
+              onStartEditingEdge={(id) => setEditingEdgeId(id)}
+              onStopEditingEdge={() => setEditingEdgeId(null)}
               onContextMenuNode={handleContextMenuNode}
               onContextMenuEdge={handleContextMenuEdge}
               onDropNewNode={(type, pos) => handleCreateNode(type, pos)}
@@ -1736,11 +1741,12 @@ export function App() {
                     <span className="text-sky-400 font-mono text-[9px]">executionFlowResultValue</span>
                   </label>
                   <input
+                    ref={edgeLabelInputRef}
                     type="text"
                     value={(selectedEdge.data?.label as string) || ''}
                     onChange={(e) => handleUpdateEdgeLabel(e.target.value)}
                     placeholder="Ex: DEFAULT, CONFIRMAR, ABANDONAR..."
-                    className="mt-1 w-full font-mono font-bold text-sky-300 bg-slate-950 p-2 rounded border border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-400 transition text-xs shadow-inner"
+                    className="mt-1 w-full font-mono font-bold text-sky-300 bg-slate-950 p-2 rounded border-2 border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-400 transition text-xs shadow-inner"
                   />
                 </div>
 
@@ -2102,7 +2108,9 @@ export function App() {
               </div>
               <button
                 onClick={() => {
-                  setSelectedEdge(contextMenu.edge!);
+                  const edge = contextMenu.edge!;
+                  setEditingEdgeId(edge.id);
+                  setSelectedEdge(edge);
                   setSelectedNode(null);
                   setSelectedNodeId(null);
                   setContextMenu(null);
@@ -2110,7 +2118,26 @@ export function App() {
                 className="w-full px-3 py-1.5 hover:bg-slate-800 flex items-center gap-2 text-left text-sky-300 font-medium"
               >
                 <span>✏️</span>
-                <span>Editar Rótulo em Propriedades</span>
+                <span>Editar Rótulo no Canvas (Inline)</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  const edge = contextMenu.edge!;
+                  setSelectedEdge(edge);
+                  setSelectedNode(null);
+                  setSelectedNodeId(null);
+                  setContextMenu(null);
+                  setTimeout(() => {
+                    edgeLabelInputRef.current?.focus();
+                    edgeLabelInputRef.current?.select();
+                  }, 50);
+                  showToast('Editando rótulo da transição no painel de Propriedades (à direita)', 'info');
+                }}
+                className="w-full px-3 py-1.5 hover:bg-slate-800 flex items-center gap-2 text-left text-sky-300 font-medium"
+              >
+                <span>📋</span>
+                <span>Editar em Propriedades (Painel Lateral)</span>
               </button>
               <div className="h-[1px] bg-slate-800 my-1" />
               <div className="px-3 py-1 text-[10px] uppercase font-semibold text-slate-500">

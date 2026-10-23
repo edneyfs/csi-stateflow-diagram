@@ -31,6 +31,9 @@ export interface DiagramCanvasProps {
   onSelectEdge: (edge: Edge | null) => void;
   selectedEdgeId?: string | null;
   selectedNodeId?: string | null;
+  editingEdgeId?: string | null;
+  onStartEditingEdge?: (edgeId: string) => void;
+  onStopEditingEdge?: () => void;
   onContextMenuNode: (event: React.MouseEvent, node: Node) => void;
   onContextMenuEdge?: (event: React.MouseEvent, edge: Edge) => void;
   onDropNewNode?: (type: 'startPoint' | 'executable' | 'subflow' | 'result', position: { x: number; y: number }) => void;
@@ -49,6 +52,9 @@ function DiagramCanvasInternal({
   onSelectEdge,
   selectedEdgeId,
   selectedNodeId,
+  editingEdgeId,
+  onStartEditingEdge,
+  onStopEditingEdge,
   onContextMenuNode,
   onContextMenuEdge,
   onDropNewNode,
@@ -122,7 +128,10 @@ function DiagramCanvasInternal({
   const onPaneClick = useCallback(() => {
     onSelectNode(null);
     onSelectEdge(null);
-  }, [onSelectNode, onSelectEdge]);
+    if (onStopEditingEdge) {
+      onStopEditingEdge();
+    }
+  }, [onSelectNode, onSelectEdge, onStopEditingEdge]);
 
   const onNodesDelete = useCallback(
     (deletedNodes: Node[]) => {
@@ -183,6 +192,13 @@ function DiagramCanvasInternal({
       selected: e.id === selectedEdgeId,
       data: {
         ...e.data,
+        isEditingInline: editingEdgeId === e.id,
+        onStartInlineEdit: () => {
+          if (onStartEditingEdge) onStartEditingEdge(e.id);
+        },
+        onStopInlineEdit: () => {
+          if (onStopEditingEdge) onStopEditingEdge();
+        },
         onSelect: () => {
           onSelectEdge(e);
           onSelectNode(null);
@@ -203,7 +219,17 @@ function DiagramCanvasInternal({
         },
       },
     }));
-  }, [edges, selectedEdgeId, onSelectEdge, onSelectNode, onContextMenuEdge, onUpdateEdgeLabel]);
+  }, [
+    edges,
+    selectedEdgeId,
+    editingEdgeId,
+    onStartEditingEdge,
+    onStopEditingEdge,
+    onSelectEdge,
+    onSelectNode,
+    onContextMenuEdge,
+    onUpdateEdgeLabel,
+  ]);
 
   return (
     <div
