@@ -279,28 +279,44 @@ export class WebFileSystemService {
           }
         } else if (entry.kind === 'file' && entry.name.endsWith('.java')) {
           try {
-            const file = await entry.getFile();
-            const content = await file.text();
+            const simpleName = entry.name.replace(/\.java$/, '');
+            const isMic = simpleName.startsWith('Mic');
 
-            const pkgMatch = content.match(/package\s+([\w\.]+);/);
-            const classMatch = content.match(/public\s+(?:abstract\s+)?class\s+(\w+)/);
-
-            if (classMatch) {
-              const simpleName = classMatch[1];
-              const pkg = pkgMatch ? pkgMatch[1] : '';
-              const fullName = pkg ? `${pkg}.${simpleName}` : simpleName;
-              const relPath = currentRelPath ? `${currentRelPath}/${entry.name}` : entry.name;
-
-              results.push({
-                className: fullName,
-                simpleClassName: simpleName,
-                packageName: pkg,
-                filePath: relPath,
-                isMic: simpleName.startsWith('Mic'),
-              });
+            // 1. Extração ultra-rápida do pacote a partir da estrutura de diretórios (0ms overhead)
+            let pkg = '';
+            const pathParts = currentRelPath.split('/');
+            const pkgIndex = pathParts.findIndex((p) =>
+              ['com', 'org', 'br', 'net', 'gov', 'io'].includes(p.toLowerCase())
+            );
+            if (pkgIndex !== -1) {
+              pkg = pathParts.slice(pkgIndex).join('.');
             }
+
+            // 2. Fallback: se não detectado no caminho, lê apenas os primeiros 1024 bytes (não o arquivo todo)
+            if (!pkg) {
+              try {
+                const file = await entry.getFile();
+                const slice = typeof file.slice === 'function' ? file.slice(0, 1024) : file;
+                const header = await slice.text();
+                const pkgMatch = header.match(/package\s+([\w\.]+);/);
+                if (pkgMatch) pkg = pkgMatch[1];
+              } catch {
+                // ignora falha de leitura pontual
+              }
+            }
+
+            const fullName = pkg ? `${pkg}.${simpleName}` : simpleName;
+            const relPath = currentRelPath ? `${currentRelPath}/${entry.name}` : entry.name;
+
+            results.push({
+              className: fullName,
+              simpleClassName: simpleName,
+              packageName: pkg,
+              filePath: relPath,
+              isMic,
+            });
           } catch {
-            // Ignora arquivos que não possam ser lidos
+            // Ignora arquivos que não possam ser processados
           }
         }
       }

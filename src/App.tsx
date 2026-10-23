@@ -283,6 +283,7 @@ export function App() {
   const [diagramList, setDiagramList] = useState<DiagramFileInfo[]>(defaultMockDiagrams);
   const [diagramSearch, setDiagramSearch] = useState<string>('');
   const [diagramTypeFilter, setDiagramTypeFilter] = useState<'all' | 'executionflow' | 'stateflow'>('all');
+  const [showLayoutDiagrams, setShowLayoutDiagrams] = useState<boolean>(false);
 
   // Abas e nós ativos no canvas
   const [activeTab, setActiveTab] = useState<string>('7026_CONFIRMACAO_AJUSTES.executionflow');
@@ -576,9 +577,9 @@ export function App() {
   const filteredDiagrams = useMemo(() => {
     return diagramList.filter((d) => {
       // Oculta arquivos puramente de layout notation (_diagram) da listagem principal
-      // a menos que o usuário pesquise explicitamente por "_diagram"
+      // se showLayoutDiagrams estiver desligado e o usuário não pesquisar por _diagram
       const isSearchingDiagram = diagramSearch.toLowerCase().includes('_diagram');
-      if (d.isDiagramLayout && !isSearchingDiagram) return false;
+      if (d.isDiagramLayout && !showLayoutDiagrams && !isSearchingDiagram) return false;
 
       if (diagramTypeFilter !== 'all' && d.type !== diagramTypeFilter) return false;
       if (!diagramSearch) return true;
@@ -589,7 +590,7 @@ export function App() {
         d.relativePath.toLowerCase().includes(term)
       );
     });
-  }, [diagramList, diagramSearch, diagramTypeFilter]);
+  }, [diagramList, diagramSearch, diagramTypeFilter, showLayoutDiagrams]);
 
   const onNodesChange = useCallback((changes: NodeChange[]) => {
     setCurrentNodes((nds) => applyNodeChanges(changes, nds));
@@ -1037,7 +1038,6 @@ export function App() {
       if (handle) {
         setWorkspacePath(handle.name);
         setStoredDirectoryName(null);
-        showToast(`Pasta "${handle.name}" reconectada com sucesso!`, 'success');
 
         const files = await WebFileSystemService.scanDiagrams(handle);
         if (files && files.length > 0) {
@@ -1053,6 +1053,14 @@ export function App() {
             }))
           );
         }
+
+        const micCount = (classes || []).filter((c) => c.isMic).length;
+        const semanticCount = (files || []).filter((f) => !f.isDiagramLayout).length;
+        const layoutCount = (files || []).filter((f) => f.isDiagramLayout).length;
+        showToast(
+          `Pasta "${handle.name}" reconectada: ${semanticCount} diagramas (${layoutCount} layouts) e ${micCount} classes MIC indexadas!`,
+          'success'
+        );
       } else {
         showToast('Permissão de acesso à pasta não foi autorizada.', 'error');
       }
@@ -1068,6 +1076,29 @@ export function App() {
         setWorkspacePath(selected);
         localStorage.setItem('csi_workspace_path', selected);
         setShowWorkspaceModal(false);
+
+        const files = await window.api.scanDiagrams(selected);
+        if (files && files.length > 0) {
+          setDiagramList(files);
+        }
+
+        const classes = await window.api.scanJavaClasses(selected);
+        if (classes && classes.length > 0) {
+          setScannedJavaClasses(
+            classes.map((c) => ({
+              name: c.simpleClassName || c.className.split('.').pop() || c.className,
+              pkg: c.className || c.packageName,
+            }))
+          );
+        }
+
+        const micCount = (classes || []).filter((c) => c.isMic).length;
+        const semanticCount = (files || []).filter((f) => !f.isDiagramLayout).length;
+        const layoutCount = (files || []).filter((f) => f.isDiagramLayout).length;
+        showToast(
+          `Workspace carregado: ${semanticCount} diagramas (${layoutCount} layouts) e ${micCount} classes MIC indexadas!`,
+          'success'
+        );
       }
     } else if (WebFileSystemService.isSupported()) {
       try {
@@ -1077,7 +1108,6 @@ export function App() {
           setStoredDirectoryName(null);
           localStorage.setItem('csi_workspace_path', handle.name);
           setShowWorkspaceModal(false);
-          showToast(`Pasta "${handle.name}" conectada com sucesso!`, 'success');
 
           const files = await WebFileSystemService.scanDiagrams(handle);
           if (files && files.length > 0) {
@@ -1093,6 +1123,14 @@ export function App() {
               }))
             );
           }
+
+          const micCount = (classes || []).filter((c) => c.isMic).length;
+          const semanticCount = (files || []).filter((f) => !f.isDiagramLayout).length;
+          const layoutCount = (files || []).filter((f) => f.isDiagramLayout).length;
+          showToast(
+            `Workspace carregado: ${semanticCount} diagramas (${layoutCount} layouts) e ${micCount} classes MIC indexadas!`,
+            'success'
+          );
         }
       } catch (err: any) {
         showToast(`Erro ao selecionar pasta: ${err.message || err}`, 'error');
@@ -1160,6 +1198,9 @@ export function App() {
       setWorkspacePath(workspaceInput.trim());
       localStorage.setItem('csi_workspace_path', workspaceInput.trim());
       setShowWorkspaceModal(false);
+      if (!window.api && WebFileSystemService.isSupported()) {
+        handleChooseWorkspaceFolder();
+      }
     }
   };
 
@@ -1223,34 +1264,53 @@ export function App() {
         </div>
       </header>
 
-      {/* Banner de Reconexão de Workspace (1 Clique via IndexedDB no Navegador) */}
-      {storedDirectoryName && (
+      {/* Banner de Reconexão de Workspace ou Seleção Inicial na Web */}
+      {!window.api && !WebFileSystemService.getCurrentHandle() && (
         <div className="bg-sky-950/80 border-b border-sky-700/60 px-4 py-2 flex items-center justify-between text-xs text-sky-200 z-20 shadow-inner">
           <div className="flex items-center gap-2">
             <HardDrive className="w-4 h-4 text-sky-400 animate-pulse" />
             <span>
-              Pasta detectada da sua sessão anterior: <strong className="text-white font-mono">{storedDirectoryName}</strong>
+              {storedDirectoryName ? (
+                <>
+                  Pasta memorizada da sua sessão anterior: <strong className="text-white font-mono">{storedDirectoryName}</strong>
+                </>
+              ) : (
+                <>
+                  Modo Web puro ativo. Conecte a pasta raiz do projeto para carregar todos os 573 diagramas e 2.269 classes MIC.
+                </>
+              )}
             </span>
           </div>
           <div className="flex items-center gap-2">
+            {storedDirectoryName && (
+              <button
+                onClick={handleReconnectWorkspace}
+                className="flex items-center gap-1.5 px-3 py-1 bg-sky-600 hover:bg-sky-500 text-white rounded text-xs font-semibold shadow transition"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span>Reconectar com 1 Clique</span>
+              </button>
+            )}
             <button
-              onClick={handleReconnectWorkspace}
-              className="flex items-center gap-1.5 px-3 py-1 bg-sky-600 hover:bg-sky-500 text-white rounded text-xs font-semibold shadow transition"
+              onClick={handleChooseWorkspaceFolder}
+              className="flex items-center gap-1.5 px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-100 border border-slate-600 rounded text-xs font-semibold shadow transition"
             >
-              <RotateCcw className="w-3.5 h-3.5" />
-              <span>Reconectar com 1 Clique</span>
+              <FolderOpen className="w-3.5 h-3.5 text-sky-400" />
+              <span>Selecionar Pasta do Workspace</span>
             </button>
-            <button
-              onClick={async () => {
-                await WebFileSystemService.clearStoredDirectory();
-                setStoredDirectoryName(null);
-                showToast('Pasta esquecida do armazenamento do navegador.', 'info');
-              }}
-              className="px-2 py-1 text-slate-400 hover:text-slate-200 text-xs transition"
-              title="Esquecer pasta salva"
-            >
-              Esquecer
-            </button>
+            {storedDirectoryName && (
+              <button
+                onClick={async () => {
+                  await WebFileSystemService.clearStoredDirectory();
+                  setStoredDirectoryName(null);
+                  showToast('Pasta esquecida do armazenamento do navegador.', 'info');
+                }}
+                className="px-2 py-1 text-slate-400 hover:text-slate-200 text-xs transition"
+                title="Esquecer pasta salva"
+              >
+                Esquecer
+              </button>
+            )}
           </div>
         </div>
       )}
@@ -1295,7 +1355,7 @@ export function App() {
                     : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
                 }`}
               >
-                Todos ({diagramList.filter((d) => !d.isDiagramLayout).length})
+                Todos ({showLayoutDiagrams ? diagramList.length : diagramList.filter((d) => !d.isDiagramLayout).length})
               </button>
               <button
                 onClick={() => setDiagramTypeFilter('executionflow')}
@@ -1305,7 +1365,7 @@ export function App() {
                     : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
                 }`}
               >
-                Execution ({diagramList.filter((d) => d.type === 'executionflow' && !d.isDiagramLayout).length})
+                Execution ({diagramList.filter((d) => d.type === 'executionflow' && (showLayoutDiagrams || !d.isDiagramLayout)).length})
               </button>
               <button
                 onClick={() => setDiagramTypeFilter('stateflow')}
@@ -1315,8 +1375,29 @@ export function App() {
                     : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
                 }`}
               >
-                State ({diagramList.filter((d) => d.type === 'stateflow' && !d.isDiagramLayout).length})
+                State ({diagramList.filter((d) => d.type === 'stateflow' && (showLayoutDiagrams || !d.isDiagramLayout)).length})
               </button>
+            </div>
+
+            {/* Contador de Diagramas & Toggle de Layouts .diagram */}
+            <div className="flex items-center justify-between text-[11px] px-1 pt-1.5 border-t border-slate-800/60 text-slate-400">
+              <span className="truncate">
+                {diagramList.filter((d) => !d.isDiagramLayout).length} fluxos
+                {diagramList.filter((d) => d.isDiagramLayout).length > 0 &&
+                  ` (+ ${diagramList.filter((d) => d.isDiagramLayout).length} layouts)`}
+              </span>
+              <label
+                className="flex items-center gap-1.5 cursor-pointer hover:text-slate-200 select-none shrink-0"
+                title="Exibir também os arquivos .diagram na listagem (total de arquivos do workspace)"
+              >
+                <input
+                  type="checkbox"
+                  checked={showLayoutDiagrams}
+                  onChange={(e) => setShowLayoutDiagrams(e.target.checked)}
+                  className="rounded bg-slate-950 border-slate-700 text-sky-500 focus:ring-0 w-3.5 h-3.5"
+                />
+                <span className="text-[10px]">Ver .diagram</span>
+              </label>
             </div>
           </div>
 

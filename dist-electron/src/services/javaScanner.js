@@ -26,24 +26,43 @@ class JavaScanner {
                 }
                 else if (entry.isFile() && entry.name.endsWith('.java')) {
                     try {
-                        const content = await fs_1.default.promises.readFile(fullPath, 'utf-8');
-                        const pkgMatch = content.match(/package\s+([\w\.]+);/);
-                        const classMatch = content.match(/public\s+(?:abstract\s+)?class\s+(\w+)/);
-                        if (classMatch) {
-                            const simpleName = classMatch[1];
-                            const pkg = pkgMatch ? pkgMatch[1] : '';
-                            const fullName = pkg ? `${pkg}.${simpleName}` : simpleName;
-                            results.push({
-                                className: fullName,
-                                simpleClassName: simpleName,
-                                packageName: pkg,
-                                filePath: fullPath,
-                                isMic: simpleName.startsWith('Mic'),
-                            });
+                        const simpleName = entry.name.replace(/\.java$/, '');
+                        const isMic = simpleName.startsWith('Mic');
+                        // Extrai pacote primeiro via caminho de pastas (0ms overhead)
+                        let pkg = '';
+                        const normPath = fullPath.replace(/\\/g, '/');
+                        const pathParts = normPath.split('/');
+                        const pkgIndex = pathParts.findIndex((p) => ['com', 'org', 'br', 'net', 'gov', 'io'].includes(p.toLowerCase()));
+                        if (pkgIndex !== -1) {
+                            pkg = pathParts.slice(pkgIndex, -1).join('.');
                         }
+                        // Fallback: se não estiver na convenção de pastas, lê apenas os primeiros 1024 bytes do cabeçalho
+                        if (!pkg) {
+                            try {
+                                const fd = await fs_1.default.promises.open(fullPath, 'r');
+                                const buf = Buffer.alloc(1024);
+                                const { bytesRead } = await fd.read(buf, 0, 1024, 0);
+                                await fd.close();
+                                const header = buf.toString('utf8', 0, bytesRead);
+                                const pkgMatch = header.match(/package\s+([\w\.]+);/);
+                                if (pkgMatch)
+                                    pkg = pkgMatch[1];
+                            }
+                            catch {
+                                // ignora erro de leitura
+                            }
+                        }
+                        const fullName = pkg ? `${pkg}.${simpleName}` : simpleName;
+                        results.push({
+                            className: fullName,
+                            simpleClassName: simpleName,
+                            packageName: pkg,
+                            filePath: fullPath,
+                            isMic,
+                        });
                     }
                     catch {
-                        // Ignora arquivos ilegíveis
+                        // Ignora arquivos com erro
                     }
                 }
             }
