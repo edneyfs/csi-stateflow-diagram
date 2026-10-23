@@ -1,0 +1,61 @@
+{
+  "name": "csi-stateflow-vscode",
+  "displayName": "CSI StateFlow Visual Studio",
+  "description": "Editor visual de diagramas CSI / P2K (.executionflow e .stateflow) em fonte único para o VS Code",
+  "version": "0.1.9",
+  "publisher": "edneysiqueira",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Visualization",
+    "Other"
+  ],
+  "main": "./dist/extension.js",
+  "activationEvents": [
+    "onCustomEditor:csi.stateflow.editor"
+  ],
+  "contributes": {
+    "customEditors": [
+      {
+        "viewType": "csi.stateflow.editor",
+        "displayName": "CSI StateFlow Visual Editor",
+        "selector": [
+          {
+            "filenamePattern": "*.executionflow"
+          },
+          {
+            "filenamePattern": "*.stateflow"
+          }
+        ],
+        "priority": "default"
+      }
+    ],
+    "commands": [
+      {
+        "command": "csi.stateflow.openVisual",
+        "title": "CSI: Abrir com Editor Visual StateFlow"
+      }
+    ],
+    "menus": {
+      "explorer/context": [
+        {
+          "when": "resourceExtname == .executionflow || resourceExtname == .stateflow",
+          "command": "csi.stateflow.openVisual",
+          "group": "navigation"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.10",
+    "@types/vscode": "^1.85.0",
+    "typescript": "^5.8.2"
+  }
+}

@@ -38,6 +38,8 @@ import type { DiagramFileInfo, JavaClassInfo, DiagramReference } from './types/w
 import { XmlEngine } from './services/xmlEngine';
 import { GraphConverter } from './services/graphConverter';
 import { WebFileSystemService } from './services/webFileSystem';
+import { EnvironmentService } from './services/environmentService';
+import { VsCodeBridge } from './services/vscodeBridge';
 import type { DiagramModel, ExecutionFlowModel } from './types/model';
 
 const initialSampleXml = `<?xml version="1.0" encoding="UTF-8"?>
@@ -271,11 +273,14 @@ const sampleEdges: Edge[] = [
 ];
 
 export function App() {
+  // Detecção de ambiente e features (Web, Desktop Electron ou VS Code Custom Editor)
+  const envFeatures = useMemo(() => EnvironmentService.getFeatures(), []);
   // Estado do Workspace selecionado (solicita na inicialização se não configurado)
   const [workspacePath, setWorkspacePath] = useState<string>(() => {
     return localStorage.getItem('csi_workspace_path') || 'C:\\p2k-centauro-trunk';
   });
   const [showWorkspaceModal, setShowWorkspaceModal] = useState<boolean>(() => {
+    if (!envFeatures.showWorkspaceButton) return false;
     return !localStorage.getItem('csi_workspace_path');
   });
   const [workspaceInput, setWorkspaceInput] = useState<string>(workspacePath);
@@ -329,6 +334,61 @@ export function App() {
       return () => clearTimeout(timer);
     }
   }, [toast]);
+
+  // Ponte de comunicação com VS Code (CustomTextEditor)
+  const isInitialVsCodeLoadRef = useRef<boolean>(true);
+
+  // 1. Escuta eventos do VS Code Webview Host (carregamento de arquivo e classes)
+  useEffect(() => {
+    if (!envFeatures.enableNativeVsCodeSync) return;
+
+    VsCodeBridge.notifyReady();
+
+    const cleanup = VsCodeBridge.onMessage((msg) => {
+      if (msg.type === 'loadDiagram' && msg.content) {
+        try {
+          const model = XmlEngine.parse(msg.content);
+          isInitialVsCodeLoadRef.current = true;
+          setCurrentModel(model);
+          const graph = GraphConverter.modelToGraph(model);
+          setCurrentNodes(graph.nodes);
+          setCurrentEdges(graph.edges);
+          if (msg.fileName) {
+            setActiveTab(msg.fileName);
+            setCurrentFileRelativePath(msg.fileName);
+          }
+          showToast(`Diagrama carregado: ${msg.fileName || 'arquivo'}`, 'info');
+        } catch (err: any) {
+          showToast(`Erro ao ler XML do VS Code: ${err.message}`, 'error');
+        }
+      } else if (msg.type === 'updateJavaClasses' && Array.isArray(msg.classes)) {
+        setScannedJavaClasses(msg.classes);
+      }
+    });
+
+    return cleanup;
+  }, [envFeatures.enableNativeVsCodeSync, showToast]);
+
+  // 2. Sincronização em tempo real das modificações com o buffer do VS Code
+  useEffect(() => {
+    if (!envFeatures.enableNativeVsCodeSync || !currentModel) return;
+
+    if (isInitialVsCodeLoadRef.current) {
+      isInitialVsCodeLoadRef.current = false;
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      try {
+        const xml = XmlEngine.serialize(currentModel);
+        VsCodeBridge.notifyDocumentChange(xml);
+      } catch (err) {
+        console.error('Falha ao serializar diagrama para o VS Code:', err);
+      }
+    }, 250);
+
+    return () => clearTimeout(timer);
+  }, [currentModel, envFeatures.enableNativeVsCodeSync]);
 
   // Pasta persistida no IndexedDB para reconexão em 1 clique
   const [storedDirectoryName, setStoredDirectoryName] = useState<string | null>(null);
@@ -1190,6 +1250,13 @@ export function App() {
     try {
       const xml = XmlEngine.serialize(currentModel);
 
+      // 0. VS Code Custom Text Editor
+      if (envFeatures.enableNativeVsCodeSync) {
+        VsCodeBridge.notifyDocumentChange(xml);
+        showToast('Diagrama sincronizado com o buffer do VS Code!', 'success');
+        return;
+      }
+
       // 1. Electron Desktop
       if (window.api) {
         let targetPath = currentFileFullPath;
@@ -1269,35 +1336,58 @@ export function App() {
           <div className="h-4 w-[1px] bg-slate-800 mx-2" />
 
           {/* Botão Indicador do Workspace Selecionado */}
-          <button
-            onClick={() => setShowWorkspaceModal(true)}
-            className="flex items-center gap-2 px-3 py-1 rounded bg-slate-800/90 hover:bg-slate-700 text-xs text-slate-300 border border-slate-700 transition"
-            title="Clique para trocar a pasta de Workspace"
-          >
-            <FolderTree className="w-3.5 h-3.5 text-amber-400" />
-            <span className="text-slate-400">Workspace:</span>
-            <span className="font-mono text-sky-300 font-medium truncate max-w-[280px]">
-              {workspacePath || 'Nenhum selecionado'}
-            </span>
-          </button>
+          {envFeatures.showWorkspaceButton ? (
+            <button
+              onClick={() => setShowWorkspaceModal(true)}
+              className="flex items-center gap-2 px-3 py-1 rounded bg-slate-800/90 hover:bg-slate-700 text-xs text-slate-300 border border-slate-700 transition"
+              title="Clique para trocar a pasta de Workspace"
+            >
+              <FolderTree className="w-3.5 h-3.5 text-amber-400" />
+              <span className="text-slate-400">Workspace:</span>
+              <span className="font-mono text-sky-300 font-medium truncate max-w-[280px]">
+                {workspacePath || 'Nenhum selecionado'}
+              </span>
+            </button>
+          ) : (
+            <div className="flex items-center gap-2 px-3 py-1 rounded bg-sky-950/70 text-xs text-sky-200 border border-sky-800/80 shadow-sm">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="font-mono font-semibold text-sky-300">VS Code Editor</span>
+              <span className="text-slate-500">|</span>
+              <span className="font-mono text-slate-300 truncate max-w-[320px]" title={currentFileRelativePath || activeTab}>
+                {activeTab}
+              </span>
+            </div>
+          )}
         </div>
 
         <div className="flex items-center gap-2">
-          <button
-            onClick={handleChooseWorkspaceFolder}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md bg-slate-800 hover:bg-slate-700 text-slate-200 transition border border-slate-700 shadow-sm"
-          >
-            <FolderOpen className="w-3.5 h-3.5 text-sky-400" />
-            <span>Trocar Workspace</span>
-          </button>
-          <button
-            onClick={handleSaveXml}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md bg-sky-600 hover:bg-sky-500 text-white transition shadow-sm font-semibold"
-            title="Salvar XML no disco local (com backup automático .bak)"
-          >
-            <Save className="w-3.5 h-3.5" />
-            <span>Salvar XML</span>
-          </button>
+          {envFeatures.showWorkspaceButton && (
+            <button
+              onClick={handleChooseWorkspaceFolder}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md bg-slate-800 hover:bg-slate-700 text-slate-200 transition border border-slate-700 shadow-sm"
+            >
+              <FolderOpen className="w-3.5 h-3.5 text-sky-400" />
+              <span>Trocar Workspace</span>
+            </button>
+          )}
+          {envFeatures.showSaveButton ? (
+            <button
+              onClick={handleSaveXml}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md bg-sky-600 hover:bg-sky-500 text-white transition shadow-sm font-semibold"
+              title="Salvar XML no disco local (com backup automático .bak)"
+            >
+              <Save className="w-3.5 h-3.5" />
+              <span>Salvar XML</span>
+            </button>
+          ) : (
+            <div
+              className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-md bg-emerald-950/80 border border-emerald-800/80 text-emerald-300 shadow-sm font-mono"
+              title="Sincronização bidirecional em tempo real ativada com o VS Code (Ctrl+S nativo)"
+            >
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Sincronizado VS Code</span>
+            </div>
+          )}
           <button
             onClick={openHelpPortal}
             className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 rounded-md transition border border-slate-700"
@@ -1310,7 +1400,7 @@ export function App() {
       </header>
 
       {/* Banner de Reconexão de Workspace ou Seleção Inicial na Web */}
-      {!window.api && !WebFileSystemService.getCurrentHandle() && (
+      {envFeatures.showWorkspaceButton && !window.api && !WebFileSystemService.getCurrentHandle() && (
         <div className="bg-sky-950/80 border-b border-sky-700/60 px-4 py-2 flex items-center justify-between text-xs text-sky-200 z-20 shadow-inner">
           <div className="flex items-center gap-2">
             <HardDrive className="w-4 h-4 text-sky-400 animate-pulse" />
@@ -1363,6 +1453,7 @@ export function App() {
       {/* 2. Main Workbench (3 Colunas) */}
       <div className="flex-1 flex overflow-hidden relative">
         {/* Painel Esquerdo: ÁREA DEDICADA DE TODOS OS DIAGRAMAS DO WORKSPACE */}
+        {envFeatures.showLeftSidebar && (
         <aside className="w-80 bg-slate-900/95 border-r border-slate-800 flex flex-col z-20 shadow-lg">
           {/* Header da Seção de Diagramas */}
           <div className="p-3 border-b border-slate-800 flex items-center justify-between bg-slate-900">
@@ -1565,6 +1656,7 @@ export function App() {
             </ul>
           </div>
         </aside>
+        )}
 
         {/* Centro: Canvas e Header de Abas */}
         <main className="flex-1 flex flex-col bg-slate-950 relative overflow-hidden">
@@ -1981,7 +2073,7 @@ export function App() {
       </div>
 
       {/* 3. Modal de Seleção de Workspace na Abertura */}
-      {showWorkspaceModal && (
+      {envFeatures.showWorkspaceButton && showWorkspaceModal && (
         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="w-full max-w-lg bg-slate-900 border border-slate-700 rounded-xl shadow-2xl p-6 space-y-4">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">

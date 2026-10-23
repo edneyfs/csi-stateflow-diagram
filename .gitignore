@@ -10,6 +10,9 @@ fonte/
 
 # Large binaries & Zips
 *.zip
+*.vsix
+vscode-extension/dist/
+vscode-extension/dist-webview/
 cfr-0.152.jar
 
 # OS

@@ -1,6 +1,6 @@
 {
   "name": "csi-stateflow-studio",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "description": "Studio visual independente para máquinas de estado CSI/P2K (.stateflow e .executionflow)",
   "main": "dist-electron/electron/main.js",
   "scripts": {
@@ -8,6 +8,8 @@
     "dev:electron": "tsc -p tsconfig.electron.json && concurrently \"vite\" \"wait-on tcp:5173 && electron .\"",
     "postinstall": "node node_modules/electron/install.js",
     "build": "tsc && vite build && tsc -p tsconfig.electron.json",
+    "build:vscode": "node scripts/build-vscode.js",
+    "package:vscode": "node scripts/package-vscode.js",
     "test": "node --test tests/*.node.test.js",
     "test:vitest": "vitest run",
     "test:e2e": "playwright test",
@@ -42,6 +44,7 @@
     "@types/node": "^22.13.10",
     "@types/react": "^19.0.10",
     "@types/react-dom": "^19.0.4",
+    "@types/vscode": "^1.140.0",
     "@vitejs/plugin-react": "^4.3.4",
     "autoprefixer": "^10.4.21",
     "concurrently": "^9.1.2",
