@@ -4,6 +4,8 @@ dist/
 dist-electron/
 build/
 scratch/
+.vite/
+fonte/
 *.log
 
 # Large binaries & Zips
