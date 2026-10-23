@@ -30,8 +30,11 @@ export interface DiagramCanvasProps {
   onSelectNode: (node: Node | null) => void;
   onSelectEdge: (edge: Edge | null) => void;
   selectedEdgeId?: string | null;
+  selectedNodeId?: string | null;
   onContextMenuNode: (event: React.MouseEvent, node: Node) => void;
   onDropNewNode?: (type: 'startPoint' | 'executable' | 'subflow' | 'result', position: { x: number; y: number }) => void;
+  onDeleteNode?: (nodeId: string) => void;
+  onDeleteEdge?: (edgeId: string) => void;
 }
 
 function DiagramCanvasInternal({
@@ -43,8 +46,11 @@ function DiagramCanvasInternal({
   onSelectNode,
   onSelectEdge,
   selectedEdgeId,
+  selectedNodeId,
   onContextMenuNode,
   onDropNewNode,
+  onDeleteNode,
+  onDeleteEdge,
 }: DiagramCanvasProps) {
   const { screenToFlowPosition } = useReactFlow();
 
@@ -67,7 +73,8 @@ function DiagramCanvasInternal({
   );
 
   const onNodeClick = useCallback(
-    (_: React.MouseEvent, node: Node) => {
+    (event: React.MouseEvent, node: Node) => {
+      event.stopPropagation();
       onSelectNode(node);
       onSelectEdge(null);
     },
@@ -75,17 +82,49 @@ function DiagramCanvasInternal({
   );
 
   const onEdgeClick = useCallback(
-    (_: React.MouseEvent, edge: Edge) => {
+    (event: React.MouseEvent, edge: Edge) => {
+      event.stopPropagation();
       onSelectEdge(edge);
       onSelectNode(null);
     },
     [onSelectEdge, onSelectNode]
   );
 
+  const onSelectionChange = useCallback(
+    ({ nodes: selNodes, edges: selEdges }: { nodes: Node[]; edges: Edge[] }) => {
+      if (selNodes && selNodes.length > 0) {
+        onSelectNode(selNodes[0]);
+        onSelectEdge(null);
+      } else if (selEdges && selEdges.length > 0) {
+        onSelectEdge(selEdges[0]);
+        onSelectNode(null);
+      }
+    },
+    [onSelectNode, onSelectEdge]
+  );
+
   const onPaneClick = useCallback(() => {
     onSelectNode(null);
     onSelectEdge(null);
   }, [onSelectNode, onSelectEdge]);
+
+  const onNodesDelete = useCallback(
+    (deletedNodes: Node[]) => {
+      if (onDeleteNode) {
+        deletedNodes.forEach((n) => onDeleteNode(n.id));
+      }
+    },
+    [onDeleteNode]
+  );
+
+  const onEdgesDelete = useCallback(
+    (deletedEdges: Edge[]) => {
+      if (onDeleteEdge) {
+        deletedEdges.forEach((e) => onDeleteEdge(e.id));
+      }
+    },
+    [onDeleteEdge]
+  );
 
   const onDragOver = useCallback((event: React.DragEvent) => {
     event.preventDefault();
@@ -113,7 +152,15 @@ function DiagramCanvasInternal({
     [screenToFlowPosition, onDropNewNode]
   );
 
-  // Injeta flag selected para a aresta clicada
+  // Injeta flag selected para nós e arestas para sincronia total
+  const mappedNodes = useMemo(() => {
+    if (!selectedNodeId) return nodes;
+    return nodes.map((n) => ({
+      ...n,
+      selected: n.id === selectedNodeId,
+    }));
+  }, [nodes, selectedNodeId]);
+
   const mappedEdges = useMemo(() => {
     if (!selectedEdgeId) return edges;
     return edges.map((e) => ({
@@ -129,7 +176,7 @@ function DiagramCanvasInternal({
       onDrop={onDrop}
     >
       <ReactFlow
-        nodes={nodes}
+        nodes={mappedNodes}
         edges={mappedEdges}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
@@ -138,6 +185,10 @@ function DiagramCanvasInternal({
         onEdgeClick={onEdgeClick}
         onNodeContextMenu={onContextMenuNode}
         onPaneClick={onPaneClick}
+        onSelectionChange={onSelectionChange}
+        onNodesDelete={onNodesDelete}
+        onEdgesDelete={onEdgesDelete}
+        deleteKeyCode={['Backspace', 'Delete']}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
         fitView

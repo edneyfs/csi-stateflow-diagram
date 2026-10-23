@@ -292,8 +292,15 @@ export function App() {
   const [currentFileFullPath, setCurrentFileFullPath] = useState<string>('');
   const [currentNodes, setCurrentNodes] = useState<Node[]>(sampleNodes);
   const [currentEdges, setCurrentEdges] = useState<Edge[]>(sampleEdges);
+  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(sampleNodes[1]?.id || null);
   const [selectedNode, setSelectedNode] = useState<Node | null>(sampleNodes[1]);
   const [selectedEdge, setSelectedEdge] = useState<Edge | null>(null);
+  const [isAutocompleteOpen, setIsAutocompleteOpen] = useState<boolean>(false);
+
+  const activeNode = useMemo(() => {
+    if (!selectedNodeId) return null;
+    return currentNodes.find((n) => n.id === selectedNodeId) || selectedNode;
+  }, [currentNodes, selectedNodeId, selectedNode]);
 
   // Modelo de dados estruturado do diagrama ativo (ExecutionFlow / StateFlow)
   const [currentModel, setCurrentModel] = useState<DiagramModel | null>(() => {
@@ -443,7 +450,9 @@ export function App() {
           const { nodes, edges } = GraphConverter.modelToGraph(model, notationPositions);
           setCurrentNodes(nodes);
           setCurrentEdges(edges);
-          setSelectedNode(nodes.find((n) => n.type === 'executable') || nodes[0] || null);
+          const initialNode = nodes.find((n) => n.type === 'executable') || nodes[0] || null;
+          setSelectedNode(initialNode);
+          setSelectedNodeId(initialNode ? initialNode.id : null);
 
           if (notationPositions && notationPositions.size > 0) {
             showToast(
@@ -465,6 +474,7 @@ export function App() {
         setCurrentNodes(sampleNodes);
         setCurrentEdges(sampleEdges);
         setSelectedNode(sampleNodes[1]);
+        setSelectedNodeId(sampleNodes[1]?.id || null);
         setCurrentModel(XmlEngine.parse(initialSampleXml));
       }
     },
@@ -481,7 +491,12 @@ export function App() {
       });
       window.api.scanJavaClasses(workspacePath).then((classes) => {
         if (classes && classes.length > 0) {
-          setScannedJavaClasses(classes.map((c) => ({ name: c.className, pkg: c.packageName })));
+          setScannedJavaClasses(
+            classes.map((c) => ({
+              name: c.simpleClassName || c.className.split('.').pop() || c.className,
+              pkg: c.className || c.packageName,
+            }))
+          );
         }
       });
     }
@@ -499,6 +514,7 @@ export function App() {
       { name: 'MicAberturaCupom', pkg: 'com.csi.oper.pos.MicAberturaCupom' },
       { name: 'MicExibeMensagem', pkg: 'com.csi.oper.pos.MicExibeMensagem' },
       { name: 'MicValidaOperador', pkg: 'com.csi.oper.pos.MicValidaOperador' },
+      { name: 'MicSolicitaBaseACarregar', pkg: 'com.csi.oper.av.MicSolicitaBaseACarregar' },
     ],
     []
   );
@@ -510,16 +526,51 @@ export function App() {
     return defaultJavaClasses;
   }, [scannedJavaClasses, defaultJavaClasses]);
 
+  // Função de busca com suporte a curingas (ex: Mic**ajustes, Mic*Display, ou partes 'ajustes')
+  const matchClassPattern = useCallback((query: string, item: { name: string; pkg: string }) => {
+    if (!query) return true;
+    const clean = query.trim();
+    if (!clean) return true;
+
+    // Se possui asterisco (* ou **), interpreta como wildcard
+    if (clean.includes('*')) {
+      const regexPattern = clean
+        .replace(/[\-\[\]\/\{\}\(\)\+\?\.\\\^\$\|]/g, '\\$&')
+        .replace(/\*+/g, '.*');
+      try {
+        const regex = new RegExp(regexPattern, 'i');
+        return regex.test(item.name) || regex.test(item.pkg);
+      } catch {
+        // Fallback se regex falhar
+      }
+    }
+
+    // Busca por partes (subpalavras)
+    const terms = clean.toLowerCase().split(/\s+/).filter(Boolean);
+    const target = `${item.name} ${item.pkg}`.toLowerCase();
+    return terms.every((t) => target.includes(t));
+  }, []);
+
+  // Sugestões calculadas dinamicamente para o nó Action selecionado
+  const activeNodeTitle = (activeNode?.data?.title as string) || '';
+  const micSuggestions = useMemo(() => {
+    if (!activeNode || activeNode.type !== 'executable') return [];
+    return javaClasses
+      .filter((c) => matchClassPattern(activeNodeTitle, c))
+      .slice(0, 15);
+  }, [activeNode, activeNodeTitle, javaClasses, matchClassPattern]);
+
   const filteredClasses = useMemo(() => {
     return javaClasses.filter((c) => {
       if (micOnly && !c.name.startsWith('Mic')) return false;
       if (!javaSearch) return true;
       return (
+        matchClassPattern(javaSearch, c) ||
         c.name.toLowerCase().includes(javaSearch.toLowerCase()) ||
         c.pkg.toLowerCase().includes(javaSearch.toLowerCase())
       );
     });
-  }, [javaClasses, javaSearch, micOnly]);
+  }, [javaClasses, javaSearch, micOnly, matchClassPattern]);
 
   // Filtro da lista de diagramas no painel esquerdo
   const filteredDiagrams = useMemo(() => {
@@ -581,15 +632,19 @@ export function App() {
   }, [showToast]);
 
   const handleSelectNode = useCallback((node: Node | null) => {
+    setSelectedNodeId(node ? node.id : null);
     setSelectedNode(node);
     setSelectedEdge(null);
     setContextMenu(null);
+    setIsAutocompleteOpen(false);
   }, []);
 
   const handleSelectEdge = useCallback((edge: Edge | null) => {
     setSelectedEdge(edge);
+    setSelectedNodeId(null);
     setSelectedNode(null);
     setContextMenu(null);
+    setIsAutocompleteOpen(false);
   }, []);
 
   const handleCreateNode = useCallback(
@@ -684,8 +739,10 @@ export function App() {
       }
 
       setCurrentNodes((nds) => [...nds, newNode]);
+      setSelectedNodeId(newNode.id);
       setSelectedNode(newNode);
       setSelectedEdge(null);
+      setIsAutocompleteOpen(false);
       showToast(`Elemento "${newNode.data.title || type}" adicionado ao diagrama!`, 'success');
     },
     [currentNodes.length, showToast]
@@ -751,25 +808,51 @@ export function App() {
 
   const handleDeleteNode = useCallback(
     (nodeId: string) => {
+      // 1. Remove da lista de nós visuais
       setCurrentNodes((nds) => nds.filter((n) => n.id !== nodeId));
+      // 2. Remove arestas conectadas a este nó
       setCurrentEdges((eds) => eds.filter((e) => e.source !== nodeId && e.target !== nodeId));
 
+      // 3. Remove do modelo XML
       setCurrentModel((prev) => {
-        if (!prev || prev.type !== 'executionflow') return prev;
-        const exec = prev as ExecutionFlowModel;
-        return {
-          ...exec,
-          executableFlowObjects: exec.executableFlowObjects?.filter((o) => o.pathKey !== nodeId),
-          results: exec.results?.filter((r) => r.pathKey !== nodeId),
-          executionFlowObjects: exec.executionFlowObjects?.filter((s) => s.pathKey !== nodeId),
-          flowConnections: exec.flowConnections?.filter(
-            (c) => c.sourcePathKey !== nodeId && c.destinationPathKey !== nodeId
-          ),
-        };
+        if (!prev) return prev;
+        if (prev.type === 'executionflow') {
+          const exec = prev as ExecutionFlowModel;
+          return {
+            ...exec,
+            executableFlowObjects: exec.executableFlowObjects?.filter((o) => o.pathKey !== nodeId),
+            results: exec.results?.filter((r) => r.pathKey !== nodeId),
+            executionFlowObjects: exec.executionFlowObjects?.filter((s) => s.pathKey !== nodeId),
+            flowConnections: exec.flowConnections?.filter(
+              (c) => c.sourcePathKey !== nodeId && c.destinationPathKey !== nodeId
+            ),
+            startPoint: nodeId === 'start-point' ? undefined : exec.startPoint,
+            startPointConnection:
+              exec.startPointConnection?.destinationObjectPathKey === nodeId
+                ? undefined
+                : exec.startPointConnection,
+          };
+        } else {
+          const sf = prev as any;
+          return {
+            ...sf,
+            states: sf.states?.filter((s: any) => s.pathKey !== nodeId),
+            executionFlows: sf.executionFlows?.filter((e: any) => e.pathKey !== nodeId),
+            stateConnections: sf.stateConnections?.filter(
+              (c: any) => c.sourcePathKey !== nodeId && c.destinationPathKey !== nodeId
+            ),
+            flowConnections: sf.flowConnections?.filter(
+              (c: any) => c.sourcePathKey !== nodeId && c.destinationPathKey !== nodeId
+            ),
+            startPoint: nodeId === 'start-point' ? undefined : sf.startPoint,
+          };
+        }
       });
 
+      setSelectedNodeId(null);
       setSelectedNode(null);
-      showToast('Nó removido do diagrama!', 'info');
+      setIsAutocompleteOpen(false);
+      showToast('Nó removido do diagrama com sucesso!', 'info');
     },
     [showToast]
   );
@@ -777,27 +860,29 @@ export function App() {
   // Atualização em tempo real de propriedades do nó com sincronização bidirecional no modelo XML
   const handleUpdateNodeProperty = useCallback(
     (field: 'title' | 'className', value: string) => {
-      if (!selectedNode) return;
+      const targetNode = activeNode || selectedNode;
+      if (!targetNode) return;
 
-      const updatedData = { ...selectedNode.data, [field]: value };
-      if (field === 'title' && selectedNode.type === 'executable') {
-        const oldClass = (selectedNode.data?.className as string) || '';
+      const updatedData = { ...targetNode.data, [field]: value };
+      if (field === 'title' && targetNode.type === 'executable') {
+        const oldClass = (targetNode.data?.className as string) || '';
         const pkg = oldClass.includes('.') ? oldClass.substring(0, oldClass.lastIndexOf('.')) : '';
-        if (pkg) {
+        if (pkg && !value.includes('*')) {
           updatedData.className = `${pkg}.${value}`;
         }
       }
 
-      const updatedNode = { ...selectedNode, data: updatedData };
+      const updatedNode = { ...targetNode, data: updatedData };
       setSelectedNode(updatedNode);
+      setSelectedNodeId(targetNode.id);
 
       // Atualiza na árvore de nós visuais do React Flow
-      setCurrentNodes((prev) => prev.map((n) => (n.id === selectedNode.id ? updatedNode : n)));
+      setCurrentNodes((prev) => prev.map((n) => (n.id === targetNode.id ? updatedNode : n)));
 
       // Sincroniza diretamente no modelo de dados do XML
       setCurrentModel((prevModel) => {
         if (!prevModel) return prevModel;
-        const pathKey = (selectedNode.data?.pathKey as string) || selectedNode.id;
+        const pathKey = (targetNode.data?.pathKey as string) || targetNode.id;
 
         if (prevModel.type === 'executionflow') {
           const execModel = prevModel as any;
@@ -829,7 +914,49 @@ export function App() {
         return prevModel;
       });
     },
-    [selectedNode]
+    [activeNode, selectedNode]
+  );
+
+  // Aplicação de classe Java completa sugerida pelo Autocomplete
+  const handleSetNodeClass = useCallback(
+    (simpleName: string, fullName: string) => {
+      const targetNode = activeNode || selectedNode;
+      if (!targetNode) return;
+
+      const updatedData = {
+        ...targetNode.data,
+        title: simpleName,
+        className: fullName,
+      };
+      const updatedNode = { ...targetNode, data: updatedData };
+      setSelectedNode(updatedNode);
+      setSelectedNodeId(targetNode.id);
+
+      setCurrentNodes((prev) => prev.map((n) => (n.id === targetNode.id ? updatedNode : n)));
+
+      setCurrentModel((prevModel) => {
+        if (!prevModel || prevModel.type !== 'executionflow') return prevModel;
+        const execModel = prevModel as ExecutionFlowModel;
+        const pathKey = (targetNode.data?.pathKey as string) || targetNode.id;
+
+        const newExecs = execModel.executableFlowObjects?.map((obj) => {
+          if (obj.pathKey === pathKey) {
+            return {
+              ...obj,
+              simpleClassName: simpleName,
+              className: fullName,
+            };
+          }
+          return obj;
+        });
+
+        return {
+          ...execModel,
+          executableFlowObjects: newExecs || execModel.executableFlowObjects,
+        };
+      });
+    },
+    [activeNode, selectedNode]
   );
 
   const handleContextMenuNode = useCallback((event: React.MouseEvent, node: Node) => {
@@ -919,7 +1046,12 @@ export function App() {
 
         const classes = await WebFileSystemService.scanJavaClasses(handle);
         if (classes && classes.length > 0) {
-          setScannedJavaClasses(classes.map((c) => ({ name: c.className, pkg: c.packageName })));
+          setScannedJavaClasses(
+            classes.map((c) => ({
+              name: c.simpleClassName || c.className.split('.').pop() || c.className,
+              pkg: c.className || c.packageName,
+            }))
+          );
         }
       } else {
         showToast('Permissão de acesso à pasta não foi autorizada.', 'error');
@@ -954,7 +1086,12 @@ export function App() {
 
           const classes = await WebFileSystemService.scanJavaClasses(handle);
           if (classes && classes.length > 0) {
-            setScannedJavaClasses(classes.map((c) => ({ name: c.className, pkg: c.packageName })));
+            setScannedJavaClasses(
+              classes.map((c) => ({
+                name: c.simpleClassName || c.className.split('.').pop() || c.className,
+                pkg: c.className || c.packageName,
+              }))
+            );
           }
         }
       } catch (err: any) {
@@ -1325,8 +1462,11 @@ export function App() {
               onSelectNode={handleSelectNode}
               onSelectEdge={handleSelectEdge}
               selectedEdgeId={selectedEdge?.id}
+              selectedNodeId={selectedNodeId}
               onContextMenuNode={handleContextMenuNode}
               onDropNewNode={(type, pos) => handleCreateNode(type, pos)}
+              onDeleteNode={handleDeleteNode}
+              onDeleteEdge={handleDeleteEdge}
             />
           </div>
 
@@ -1541,44 +1681,127 @@ export function App() {
                   </button>
                 </div>
               </div>
-            ) : selectedNode ? (
+            ) : activeNode ? (
               <div className="space-y-3 text-xs">
                 <div>
-                  <label className="text-slate-500 text-[10px] uppercase font-semibold">Tipo do Nó</label>
+                  <div className="flex items-center justify-between">
+                    <label className="text-slate-500 text-[10px] uppercase font-semibold">Tipo do Nó</label>
+                    <span className="text-[10px] bg-slate-800 text-sky-400 px-1.5 py-0.2 rounded font-mono border border-slate-700">
+                      {activeNode.type}
+                    </span>
+                  </div>
                   <div className="mt-0.5 font-mono text-slate-300 bg-slate-950 p-2 rounded border border-slate-800">
-                    {selectedNode.type === 'executable'
+                    {activeNode.type === 'executable'
                       ? 'Executable Flow Object (Mic Action)'
-                      : selectedNode.type === 'result'
+                      : activeNode.type === 'result'
                       ? 'Execution Flow Result'
-                      : selectedNode.type === 'startPoint'
+                      : activeNode.type === 'startPoint'
                       ? 'Start Point'
-                      : selectedNode.type === 'subflow'
+                      : activeNode.type === 'subflow'
                       ? 'Subflow (Subfluxo)'
-                      : selectedNode.type}
+                      : activeNode.type}
                   </div>
                 </div>
 
-                <div>
-                  <label className="text-slate-500 text-[10px] uppercase font-semibold">
-                    Simple Class Name / Rótulo
-                  </label>
-                  <input
-                    type="text"
-                    value={(selectedNode.data?.title as string) || ''}
-                    onChange={(e) => handleUpdateNodeProperty('title', e.target.value)}
-                    placeholder="Nome simples da Mic ou estado..."
-                    className="mt-0.5 w-full font-semibold text-slate-100 bg-slate-950 p-2 rounded border border-slate-700 focus:outline-none focus:border-sky-500 transition text-xs"
-                  />
+                {/* Campo de Nome / Rótulo com Autocomplete e Curinga para Nós Executable (MIC) */}
+                <div className="relative">
+                  <div className="flex items-center justify-between">
+                    <label className="text-slate-300 text-[10px] uppercase font-semibold">
+                      Simple Class Name / Rótulo
+                    </label>
+                    {activeNode.type === 'executable' && micSuggestions.length > 0 && (
+                      <span className="text-[9px] text-amber-400 font-mono">
+                        {micSuggestions.length} MICs encontradas
+                      </span>
+                    )}
+                  </div>
+                  <div className="relative mt-1">
+                    <input
+                      type="text"
+                      value={(activeNode.data?.title as string) || ''}
+                      onFocus={() => {
+                        if (activeNode.type === 'executable') {
+                          setIsAutocompleteOpen(true);
+                        }
+                      }}
+                      onChange={(e) => {
+                        handleUpdateNodeProperty('title', e.target.value);
+                        if (activeNode.type === 'executable') {
+                          setIsAutocompleteOpen(true);
+                        }
+                      }}
+                      placeholder={
+                        activeNode.type === 'executable'
+                          ? 'Ex: Mic**ajustes ou parte do nome...'
+                          : 'Nome do elemento...'
+                      }
+                      className="w-full font-semibold text-slate-100 bg-slate-950 p-2 pr-7 rounded border border-slate-700 focus:outline-none focus:border-sky-500 transition text-xs shadow-inner"
+                    />
+                    {activeNode.type === 'executable' && (
+                      <button
+                        type="button"
+                        onClick={() => setIsAutocompleteOpen(!isAutocompleteOpen)}
+                        className="absolute right-1.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-sky-300 p-1"
+                        title="Buscar classes Java mapeadas"
+                      >
+                        <Search className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Dropdown de Autocomplete com Suporte a Curingas (ex: Mic**ajustes) */}
+                  {activeNode.type === 'executable' && isAutocompleteOpen && (
+                    <div className="absolute left-0 right-0 mt-1 bg-slate-900 border border-sky-500/80 rounded-md shadow-2xl z-50 max-h-60 overflow-y-auto divide-y divide-slate-800 text-xs backdrop-blur-md">
+                      <div className="p-1.5 bg-slate-950/90 flex items-center justify-between text-[10px] text-slate-400 border-b border-slate-800">
+                        <span className="font-mono text-sky-400">
+                          Sugestões MIC ({micSuggestions.length})
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setIsAutocompleteOpen(false)}
+                          className="hover:text-white px-1 font-bold text-slate-400"
+                        >
+                          ✕
+                        </button>
+                      </div>
+
+                      {micSuggestions.length > 0 ? (
+                        micSuggestions.map((cls) => (
+                          <div
+                            key={cls.name + cls.pkg}
+                            onClick={() => {
+                              handleSetNodeClass(cls.name, cls.pkg);
+                              setIsAutocompleteOpen(false);
+                              showToast(`Classe "${cls.name}" vinculada com sucesso!`, 'success');
+                            }}
+                            className="p-2 hover:bg-sky-950/80 hover:text-sky-200 cursor-pointer transition flex flex-col gap-0.5"
+                          >
+                            <div className="flex items-center gap-1.5 font-bold text-slate-200">
+                              <span className="text-amber-400 text-xs">⚙</span>
+                              <span>{cls.name}</span>
+                            </div>
+                            <span className="text-[10px] font-mono text-slate-400 truncate">
+                              {cls.pkg}
+                            </span>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="p-2.5 text-[11px] text-slate-400 italic">
+                          Nenhuma classe MIC encontrada para este filtro. Você pode continuar digitando um nome customizado.
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
 
-                {Boolean(selectedNode.data?.className) && (
+                {activeNode.type === 'executable' && (
                   <div>
                     <label className="text-slate-500 text-[10px] uppercase font-semibold">
                       Class Name (Pacote Completo)
                     </label>
                     <input
                       type="text"
-                      value={(selectedNode.data?.className as string) || ''}
+                      value={(activeNode.data?.className as string) || ''}
                       onChange={(e) => handleUpdateNodeProperty('className', e.target.value)}
                       placeholder="Ex: com.csi.oper.pos.MicNome..."
                       className="mt-0.5 w-full font-mono text-[11px] text-sky-300 bg-slate-950 p-2 rounded border border-slate-700 focus:outline-none focus:border-sky-500 transition break-all"
@@ -1591,7 +1814,7 @@ export function App() {
                     Path Key (Epoch ID Único)
                   </label>
                   <div className="mt-0.5 font-mono text-[11px] text-slate-400 bg-slate-950 p-2 rounded border border-slate-800">
-                    {(selectedNode.data?.pathKey as string) || selectedNode.id}
+                    {(activeNode.data?.pathKey as string) || activeNode.id}
                   </div>
                 </div>
 
@@ -1599,7 +1822,7 @@ export function App() {
                   <button
                     onClick={() =>
                       handleSearchReferences(
-                        (selectedNode.data?.title as string) || selectedNode.id
+                        (activeNode.data?.title as string) || activeNode.id
                       )
                     }
                     className="w-full py-2 rounded bg-sky-950 hover:bg-sky-900 text-sky-300 border border-sky-800 text-xs font-medium transition flex items-center justify-center gap-1.5 shadow-sm"
@@ -1608,8 +1831,8 @@ export function App() {
                     <span>Search ExecutionFlow References...</span>
                   </button>
                   <button
-                    onClick={() => handleDeleteNode(selectedNode.id)}
-                    className="w-full py-1.5 px-3 bg-red-950/60 hover:bg-red-900/80 border border-red-800/60 text-red-300 rounded text-xs transition flex items-center justify-center gap-1.5"
+                    onClick={() => handleDeleteNode(activeNode.id)}
+                    className="w-full py-1.5 px-3 bg-red-950/80 hover:bg-red-900 border border-red-800 text-red-300 rounded text-xs font-semibold transition flex items-center justify-center gap-1.5 shadow-sm"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                     <span>Excluir Nó do Modelo</span>
@@ -1756,7 +1979,10 @@ export function App() {
           </button>
           <button
             onClick={() => {
-              setSelectedNode(contextMenu.node);
+              if (contextMenu.node) {
+                setSelectedNode(contextMenu.node);
+                setSelectedNodeId(contextMenu.node.id);
+              }
               setContextMenu(null);
             }}
             className="w-full px-3 py-1.5 hover:bg-slate-800 flex items-center gap-2 text-left"
@@ -1767,7 +1993,9 @@ export function App() {
           <div className="h-[1px] bg-slate-800 my-1" />
           <button
             onClick={() => {
-              alert('Elemento removido do modelo');
+              if (contextMenu.node) {
+                handleDeleteNode(contextMenu.node.id);
+              }
               setContextMenu(null);
             }}
             className="w-full px-3 py-1.5 hover:bg-red-950 text-red-400 flex items-center gap-2 text-left"
