@@ -16,11 +16,36 @@ import {
   RefreshCw,
   FolderTree,
   Sliders,
+  CheckCircle2,
+  AlertTriangle,
+  RotateCcw,
+  HardDrive,
+  Download,
 } from 'lucide-react';
 import { DiagramCanvas } from './components/canvas/DiagramCanvas';
-import type { DiagramFileInfo } from './services/diagramScanner';
+import type { DiagramFileInfo, JavaClassInfo, DiagramReference } from './types/workspace';
 import { XmlEngine } from './services/xmlEngine';
 import { GraphConverter } from './services/graphConverter';
+import { WebFileSystemService } from './services/webFileSystem';
+import type { DiagramModel } from './types/model';
+
+const initialSampleXml = `<?xml version="1.0" encoding="UTF-8"?>
+<com.csi.gmf.executionflow:ExecutionFlow xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:com.csi.gmf.executionflow="http:///com/csi/gmf/executionflow.ecore" id="7026" title="7026_CONFIRMACAO_AJUSTES" description="Confirmacao de Ajustes de Venda" requestAuthorization="false">
+  <startPoint/>
+  <startPointConnection destinationObjectPathKey="1386704906523"/>
+  <executableFlowObjects pathKey="1386704906523" className="com.csi.oper.pos.MicSalvaDisplay" simpleClassName="MicSalvaDisplay"/>
+  <executableFlowObjects pathKey="1386704906524" className="com.csi.oper.pos.MicConfirmaAjustes" simpleClassName="MicConfirmaAjustes"/>
+  <executableFlowObjects pathKey="1386704906525" className="com.csi.oper.pos.MicSolicitaDadosClienteAjuste" simpleClassName="MicSolicitaDadosClienteAjuste"/>
+  <executableFlowObjects pathKey="1386704906526" className="com.csi.oper.pos.MicAbandonaAjustes" simpleClassName="MicAbandonaAjustes"/>
+  <executableFlowObjects pathKey="1386704906527" className="com.csi.oper.pos.MicRecuperaDisplay" simpleClassName="MicRecuperaDisplay"/>
+  <results pathKey="1386704906528" executionFlowResultValue="FINALIZA_AJUSTES"/>
+  <flowObjectsConnections sourcePathKey="1386704906523" destinationPathKey="1386704906524" executionFlowResultValue="DEFAULT"/>
+  <flowObjectsConnections sourcePathKey="1386704906524" destinationPathKey="1386704906525" executionFlowResultValue="CONFIRMAR"/>
+  <flowObjectsConnections sourcePathKey="1386704906524" destinationPathKey="1386704906526" executionFlowResultValue="ABANDONAR"/>
+  <flowObjectsConnections sourcePathKey="1386704906525" destinationPathKey="1386704906527" executionFlowResultValue="DEFAULT"/>
+  <flowObjectsConnections sourcePathKey="1386704906526" destinationPathKey="1386704906528" executionFlowResultValue="DEFAULT"/>
+  <flowObjectsConnections sourcePathKey="1386704906527" destinationPathKey="1386704906528" executionFlowResultValue="DEFAULT"/>
+</com.csi.gmf.executionflow:ExecutionFlow>`;
 
 // Diagramas padrão pré-carregados para navegação imediata
 const defaultMockDiagrams: DiagramFileInfo[] = [
@@ -251,9 +276,49 @@ export function App() {
 
   // Abas e nós ativos no canvas
   const [activeTab, setActiveTab] = useState<string>('7026_CONFIRMACAO_AJUSTES.executionflow');
+  const [currentFileRelativePath, setCurrentFileRelativePath] = useState<string>(
+    'configuracao/padrao/diagramas/pdv/7026_CONFIRMACAO_AJUSTES.executionflow'
+  );
   const [currentNodes, setCurrentNodes] = useState<Node[]>(sampleNodes);
   const [currentEdges, setCurrentEdges] = useState<Edge[]>(sampleEdges);
   const [selectedNode, setSelectedNode] = useState<Node | null>(sampleNodes[1]);
+
+  // Modelo de dados estruturado do diagrama ativo (ExecutionFlow / StateFlow)
+  const [currentModel, setCurrentModel] = useState<DiagramModel | null>(() => {
+    try {
+      return XmlEngine.parse(initialSampleXml);
+    } catch {
+      return null;
+    }
+  });
+
+  // Notificações Toast no canto da tela
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+
+  const showToast = useCallback((message: string, type: 'success' | 'error' | 'info' = 'info') => {
+    setToast({ message, type });
+  }, []);
+
+  useEffect(() => {
+    if (toast) {
+      const timer = setTimeout(() => setToast(null), 4500);
+      return () => clearTimeout(timer);
+    }
+  }, [toast]);
+
+  // Pasta persistida no IndexedDB para reconexão em 1 clique
+  const [storedDirectoryName, setStoredDirectoryName] = useState<string | null>(null);
+
+  // Inicialização: checa se há pasta salva no IndexedDB quando rodando no navegador
+  useEffect(() => {
+    if (!window.api && WebFileSystemService.isSupported()) {
+      WebFileSystemService.getStoredDirectory().then((handle) => {
+        if (handle) {
+          setStoredDirectoryName(handle.name);
+        }
+      });
+    }
+  }, []);
 
   // Classes Java escaneadas dinamicamente
   const [scannedJavaClasses, setScannedJavaClasses] = useState<Array<{ name: string; pkg: string }>>([]);
@@ -278,33 +343,57 @@ export function App() {
     node: Node | null;
   } | null>(null);
 
-  // Carrega e renderiza um diagrama a partir do arquivo XML
+  // Carrega e renderiza um diagrama a partir do arquivo XML (Desktop ou Web)
   const handleOpenDiagram = useCallback(
     async (d: DiagramFileInfo) => {
       setActiveTab(d.name);
+      setCurrentFileRelativePath(d.relativePath);
+
+      let xml: string | null = null;
+
+      // 1. Leitura via Electron IPC
       if (window.api && d.fullPath) {
         try {
-          const xml = await window.api.readFile(d.fullPath);
-          if (xml) {
-            const model = XmlEngine.parse(xml);
-            const { nodes, edges } = GraphConverter.modelToGraph(model);
-            setCurrentNodes(nodes);
-            setCurrentEdges(edges);
-            setSelectedNode(nodes.find((n) => n.type === 'executable') || nodes[0] || null);
-            return;
-          }
+          xml = await window.api.readFile(d.fullPath);
         } catch (err) {
-          console.warn('Erro ao ler diagrama via IPC, utilizando fallback visual:', err);
+          console.warn('Erro ao ler diagrama via IPC, utilizando fallback:', err);
         }
       }
-      // Fallback para mock caso não esteja no Electron ou erro de leitura
+
+      // 2. Leitura via File System Access API no navegador
+      if (!xml && WebFileSystemService.getCurrentHandle()) {
+        try {
+          xml = await WebFileSystemService.readFile(d.relativePath);
+        } catch (err) {
+          console.warn('Erro ao ler diagrama via Web File System API:', err);
+        }
+      }
+
+      if (xml) {
+        try {
+          const model = XmlEngine.parse(xml);
+          setCurrentModel(model);
+          const { nodes, edges } = GraphConverter.modelToGraph(model);
+          setCurrentNodes(nodes);
+          setCurrentEdges(edges);
+          setSelectedNode(nodes.find((n) => n.type === 'executable') || nodes[0] || null);
+          showToast(`Diagrama ${d.name} carregado com sucesso!`, 'success');
+          return;
+        } catch (parseErr: any) {
+          console.error('Erro no parser do XML:', parseErr);
+          showToast(`Erro na estrutura XML de ${d.name}`, 'error');
+        }
+      }
+
+      // Fallback para mock caso não esteja conectado ou ocorra erro
       if (d.name.includes('7026')) {
         setCurrentNodes(sampleNodes);
         setCurrentEdges(sampleEdges);
         setSelectedNode(sampleNodes[1]);
+        setCurrentModel(XmlEngine.parse(initialSampleXml));
       }
     },
-    []
+    [showToast]
   );
 
   // Varredura de diagramas e classes via Electron IPC quando o workspace muda
@@ -376,6 +465,64 @@ export function App() {
     setContextMenu(null);
   }, []);
 
+  // Atualização em tempo real de propriedades do nó com sincronização bidirecional no modelo XML
+  const handleUpdateNodeProperty = useCallback(
+    (field: 'title' | 'className', value: string) => {
+      if (!selectedNode) return;
+
+      const updatedData = { ...selectedNode.data, [field]: value };
+      if (field === 'title' && selectedNode.type === 'executable') {
+        const oldClass = (selectedNode.data?.className as string) || '';
+        const pkg = oldClass.includes('.') ? oldClass.substring(0, oldClass.lastIndexOf('.')) : '';
+        if (pkg) {
+          updatedData.className = `${pkg}.${value}`;
+        }
+      }
+
+      const updatedNode = { ...selectedNode, data: updatedData };
+      setSelectedNode(updatedNode);
+
+      // Atualiza na árvore de nós visuais do React Flow
+      setCurrentNodes((prev) => prev.map((n) => (n.id === selectedNode.id ? updatedNode : n)));
+
+      // Sincroniza diretamente no modelo de dados do XML
+      setCurrentModel((prevModel) => {
+        if (!prevModel) return prevModel;
+        const pathKey = (selectedNode.data?.pathKey as string) || selectedNode.id;
+
+        if (prevModel.type === 'executionflow') {
+          const execModel = prevModel as any;
+          const newExecs = execModel.executableFlowObjects?.map((obj: any) => {
+            if (obj.pathKey === pathKey) {
+              return {
+                ...obj,
+                simpleClassName: field === 'title' ? value : obj.simpleClassName,
+                className: field === 'className' ? value : (updatedData.className as string) || obj.className,
+              };
+            }
+            return obj;
+          });
+
+          const newResults = execModel.results?.map((res: any) => {
+            if (res.pathKey === pathKey && field === 'title') {
+              return { ...res, executionFlowResultValue: value };
+            }
+            return res;
+          });
+
+          return {
+            ...execModel,
+            executableFlowObjects: newExecs || execModel.executableFlowObjects,
+            results: newResults || execModel.results,
+          };
+        }
+
+        return prevModel;
+      });
+    },
+    [selectedNode]
+  );
+
   const handleContextMenuNode = useCallback((event: React.MouseEvent, node: Node) => {
     event.preventDefault();
     setSelectedNode(node);
@@ -406,6 +553,27 @@ export function App() {
       } catch (err) {
         console.warn('Busca nativa de referências via IPC:', err);
       }
+    } else if (WebFileSystemService.getCurrentHandle()) {
+      try {
+        const refs = await WebFileSystemService.findReferences(className);
+        if (refs && refs.length > 0) {
+          setReferenceDrawer({
+            visible: true,
+            className,
+            results: refs.map((r) => ({
+              diagramName: r.diagramName,
+              path: r.diagramPath,
+              nodePathKey: r.nodePathKey,
+            })),
+          });
+          showToast(`${refs.length} referências encontradas para "${className}"`, 'info');
+          return;
+        } else {
+          showToast(`Nenhuma referência encontrada para "${className}" nos diagramas.`, 'info');
+        }
+      } catch (err: any) {
+        showToast(`Erro na busca de referências: ${err.message || err}`, 'error');
+      }
     }
 
     // Demonstração com dados da referência real de 7025 e 7026
@@ -427,6 +595,31 @@ export function App() {
     });
   };
 
+  const handleReconnectWorkspace = async () => {
+    try {
+      const handle = await WebFileSystemService.reconnectStoredDirectory();
+      if (handle) {
+        setWorkspacePath(handle.name);
+        setStoredDirectoryName(null);
+        showToast(`Pasta "${handle.name}" reconectada com sucesso!`, 'success');
+
+        const files = await WebFileSystemService.scanDiagrams(handle);
+        if (files && files.length > 0) {
+          setDiagramList(files);
+        }
+
+        const classes = await WebFileSystemService.scanJavaClasses(handle);
+        if (classes && classes.length > 0) {
+          setScannedJavaClasses(classes.map((c) => ({ name: c.className, pkg: c.packageName })));
+        }
+      } else {
+        showToast('Permissão de acesso à pasta não foi autorizada.', 'error');
+      }
+    } catch (err: any) {
+      showToast(`Falha ao reconectar pasta: ${err.message || err}`, 'error');
+    }
+  };
+
   const handleChooseWorkspaceFolder = async () => {
     if (window.api) {
       const selected = await window.api.openDirectory();
@@ -435,8 +628,76 @@ export function App() {
         localStorage.setItem('csi_workspace_path', selected);
         setShowWorkspaceModal(false);
       }
+    } else if (WebFileSystemService.isSupported()) {
+      try {
+        const handle = await WebFileSystemService.selectDirectory();
+        if (handle) {
+          setWorkspacePath(handle.name);
+          setStoredDirectoryName(null);
+          localStorage.setItem('csi_workspace_path', handle.name);
+          setShowWorkspaceModal(false);
+          showToast(`Pasta "${handle.name}" conectada com sucesso!`, 'success');
+
+          const files = await WebFileSystemService.scanDiagrams(handle);
+          if (files && files.length > 0) {
+            setDiagramList(files);
+          }
+
+          const classes = await WebFileSystemService.scanJavaClasses(handle);
+          if (classes && classes.length > 0) {
+            setScannedJavaClasses(classes.map((c) => ({ name: c.className, pkg: c.packageName })));
+          }
+        }
+      } catch (err: any) {
+        showToast(`Erro ao selecionar pasta: ${err.message || err}`, 'error');
+      }
     } else {
       setShowWorkspaceModal(true);
+    }
+  };
+
+  const handleSaveXml = async () => {
+    if (!currentModel) {
+      showToast('Nenhum modelo de diagrama ativo para salvar.', 'error');
+      return;
+    }
+
+    try {
+      const xml = XmlEngine.serialize(currentModel);
+
+      // 1. Electron Desktop
+      if (window.api && currentFileRelativePath) {
+        await window.api.writeFile(currentFileRelativePath, xml);
+        showToast(`Diagrama ${activeTab} salvo no disco via Desktop!`, 'success');
+        return;
+      }
+
+      // 2. Navegador com File System Access API
+      if (WebFileSystemService.getCurrentHandle()) {
+        const targetRelPath = currentFileRelativePath || activeTab;
+        const res = await WebFileSystemService.writeFile(targetRelPath, xml, undefined, true);
+        if (res.backupPath) {
+          showToast(`Diagrama salvo com sucesso! Backup criado em ${res.backupPath}`, 'success');
+        } else {
+          showToast(`Diagrama ${activeTab} salvo com sucesso no disco!`, 'success');
+        }
+        return;
+      }
+
+      // 3. Fallback: Download via navegador se nenhuma pasta local estiver conectada
+      const blob = new Blob([xml.replace(/\r?\n/g, '\r\n')], { type: 'application/xml;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = activeTab;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast(`Arquivo ${activeTab} baixado pelo navegador!`, 'info');
+    } catch (err: any) {
+      console.error('Erro ao salvar XML:', err);
+      showToast(`Erro ao salvar XML: ${err.message || err}`, 'error');
     }
   };
 
@@ -490,8 +751,9 @@ export function App() {
             <span>Trocar Workspace</span>
           </button>
           <button
-            onClick={() => alert(`Diagrama ${activeTab} salvo com sucesso no formato XML legado!`)}
+            onClick={handleSaveXml}
             className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md bg-sky-600 hover:bg-sky-500 text-white transition shadow-sm font-semibold"
+            title="Salvar XML no disco local (com backup automático .bak)"
           >
             <Save className="w-3.5 h-3.5" />
             <span>Salvar XML</span>
@@ -506,6 +768,38 @@ export function App() {
           </button>
         </div>
       </header>
+
+      {/* Banner de Reconexão de Workspace (1 Clique via IndexedDB no Navegador) */}
+      {storedDirectoryName && (
+        <div className="bg-sky-950/80 border-b border-sky-700/60 px-4 py-2 flex items-center justify-between text-xs text-sky-200 z-20 shadow-inner">
+          <div className="flex items-center gap-2">
+            <HardDrive className="w-4 h-4 text-sky-400 animate-pulse" />
+            <span>
+              Pasta detectada da sua sessão anterior: <strong className="text-white font-mono">{storedDirectoryName}</strong>
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleReconnectWorkspace}
+              className="flex items-center gap-1.5 px-3 py-1 bg-sky-600 hover:bg-sky-500 text-white rounded text-xs font-semibold shadow transition"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span>Reconectar com 1 Clique</span>
+            </button>
+            <button
+              onClick={async () => {
+                await WebFileSystemService.clearStoredDirectory();
+                setStoredDirectoryName(null);
+                showToast('Pasta esquecida do armazenamento do navegador.', 'info');
+              }}
+              className="px-2 py-1 text-slate-400 hover:text-slate-200 text-xs transition"
+              title="Esquecer pasta salva"
+            >
+              Esquecer
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* 2. Main Workbench (3 Colunas) */}
       <div className="flex-1 flex overflow-hidden relative">
@@ -818,8 +1112,9 @@ export function App() {
                   <input
                     type="text"
                     value={(selectedNode.data?.title as string) || ''}
-                    readOnly
-                    className="mt-0.5 w-full font-semibold text-slate-200 bg-slate-950 p-2 rounded border border-slate-800 focus:outline-none"
+                    onChange={(e) => handleUpdateNodeProperty('title', e.target.value)}
+                    placeholder="Nome simples da Mic ou estado..."
+                    className="mt-0.5 w-full font-semibold text-slate-100 bg-slate-950 p-2 rounded border border-slate-700 focus:outline-none focus:border-sky-500 transition text-xs"
                   />
                 </div>
 
@@ -828,9 +1123,13 @@ export function App() {
                     <label className="text-slate-500 text-[10px] uppercase font-semibold">
                       Class Name (Pacote Completo)
                     </label>
-                    <div className="mt-0.5 font-mono text-[11px] text-sky-300 bg-slate-950 p-2 rounded border border-slate-800 break-all">
-                      {selectedNode.data.className as string}
-                    </div>
+                    <input
+                      type="text"
+                      value={(selectedNode.data?.className as string) || ''}
+                      onChange={(e) => handleUpdateNodeProperty('className', e.target.value)}
+                      placeholder="Ex: com.csi.oper.pos.MicNome..."
+                      className="mt-0.5 w-full font-mono text-[11px] text-sky-300 bg-slate-950 p-2 rounded border border-slate-700 focus:outline-none focus:border-sky-500 transition break-all"
+                    />
                   </div>
                 )}
 
@@ -889,9 +1188,34 @@ export function App() {
               <code className="text-sky-300">.stateflow</code>), além das classes Java executáveis (<code className="text-amber-300">MIC*</code>).
             </p>
 
+            {/* Botão de Destaque Web para Navegador */}
+            {!window.api && WebFileSystemService.isSupported() && (
+              <div className="p-3.5 rounded-lg bg-sky-950/60 border border-sky-600/50 flex flex-col gap-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-sky-300 flex items-center gap-1.5">
+                    <HardDrive className="w-4 h-4 text-sky-400" />
+                    Acesso Nativo ao Disco Local (Web API)
+                  </span>
+                  <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-sky-600/30 text-sky-300 border border-sky-500/40">
+                    Chrome / Edge
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-300 leading-normal">
+                  Permite abrir a pasta local do seu projeto diretamente no navegador, com gravação de XML e buscas completas sem precisar instalar nada.
+                </p>
+                <button
+                  onClick={handleChooseWorkspaceFolder}
+                  className="w-full py-2 px-3 bg-sky-600 hover:bg-sky-500 text-white rounded-md text-xs font-bold transition flex items-center justify-center gap-2 shadow"
+                >
+                  <FolderOpen className="w-4 h-4" />
+                  <span>Selecionar Pasta do Projeto no Computador</span>
+                </button>
+              </div>
+            )}
+
             <div className="space-y-1.5">
               <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
-                Caminho da Pasta do Projeto
+                Caminho da Pasta do Projeto (ou Modo Manual)
               </label>
               <div className="flex gap-2">
                 <input
@@ -990,6 +1314,34 @@ export function App() {
           >
             <span>❌</span>
             <span>Delete from Model</span>
+          </button>
+        </div>
+      )}
+
+      {/* 5. Notificação Flutuante Toast */}
+      {toast && (
+        <div
+          className={`fixed bottom-6 right-6 z-50 flex items-center gap-2.5 px-4 py-3 rounded-lg shadow-2xl border text-xs font-medium backdrop-blur-md transition-all ${
+            toast.type === 'success'
+              ? 'bg-slate-900/95 border-emerald-500/80 text-emerald-300'
+              : toast.type === 'error'
+              ? 'bg-slate-900/95 border-red-500/80 text-red-300'
+              : 'bg-slate-900/95 border-sky-500/80 text-sky-300'
+          }`}
+        >
+          {toast.type === 'success' ? (
+            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+          ) : toast.type === 'error' ? (
+            <AlertTriangle className="w-4 h-4 text-red-400 shrink-0" />
+          ) : (
+            <HardDrive className="w-4 h-4 text-sky-400 shrink-0" />
+          )}
+          <span>{toast.message}</span>
+          <button
+            onClick={() => setToast(null)}
+            className="ml-2 text-slate-500 hover:text-slate-300 p-0.5 rounded transition"
+          >
+            <X className="w-3.5 h-3.5" />
           </button>
         </div>
       )}

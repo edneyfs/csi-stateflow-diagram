@@ -1,6 +1,7 @@
 # Dependencies & Build
 node_modules/
 dist/
+dist-electron/
 build/
 scratch/
 *.log
