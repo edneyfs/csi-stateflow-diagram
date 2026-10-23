@@ -299,6 +299,7 @@ export function App() {
   const [selectedEdge, setSelectedEdge] = useState<Edge | null>(null);
   const [editingEdgeId, setEditingEdgeId] = useState<string | null>(null);
   const edgeLabelInputRef = useRef<HTMLInputElement>(null);
+  const lastSelectionTimeRef = useRef<number>(0);
   const [isAutocompleteOpen, setIsAutocompleteOpen] = useState<boolean>(false);
 
   const activeNode = useMemo(() => {
@@ -701,13 +702,25 @@ export function App() {
   }, [showToast]);
 
   const handleSelectNode = useCallback((node: Node | null) => {
+    if (!node && Date.now() - lastSelectionTimeRef.current < 400) {
+      return;
+    }
+    if (node) {
+      lastSelectionTimeRef.current = Date.now();
+      setSelectedEdge(null);
+    }
     setSelectedNodeId(node ? node.id : null);
     setSelectedNode(node);
-    setSelectedEdge(null);
     setIsAutocompleteOpen(false);
   }, []);
 
   const handleSelectEdge = useCallback((edge: Edge | null) => {
+    if (!edge && Date.now() - lastSelectionTimeRef.current < 400) {
+      return;
+    }
+    if (edge) {
+      lastSelectionTimeRef.current = Date.now();
+    }
     setSelectedEdge(edge);
     setSelectedNodeId(null);
     setSelectedNode(null);
@@ -2072,7 +2085,13 @@ export function App() {
       {contextMenu && (
         <div
           className="fixed inset-0 z-40 bg-transparent"
+          onMouseDown={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setContextMenu(null);
+          }}
           onClick={(e) => {
+            e.preventDefault();
             e.stopPropagation();
             setContextMenu(null);
           }}
@@ -2090,7 +2109,7 @@ export function App() {
             top: Math.max(10, Math.min(contextMenu.y, (typeof window !== 'undefined' ? window.innerHeight : 800) - 240)),
             left: Math.max(10, Math.min(contextMenu.x, (typeof window !== 'undefined' ? window.innerWidth : 1200) - 260)),
           }}
-          className="fixed bg-slate-900/95 border border-slate-700 shadow-2xl rounded-lg py-1.5 z-50 text-xs text-slate-200 min-w-[240px] backdrop-blur-md"
+          className="fixed bg-slate-900/95 border border-slate-700 shadow-2xl rounded-lg py-1.5 z-50 text-xs text-slate-200 min-w-[250px] backdrop-blur-md"
           onClick={(e) => e.stopPropagation()}
           onMouseDown={(e) => e.stopPropagation()}
           onContextMenu={(e) => {
@@ -2107,34 +2126,51 @@ export function App() {
                 </span>
               </div>
               <button
-                onClick={() => {
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                }}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
                   const edge = contextMenu.edge!;
+                  lastSelectionTimeRef.current = Date.now();
                   setEditingEdgeId(edge.id);
                   setSelectedEdge(edge);
                   setSelectedNode(null);
                   setSelectedNodeId(null);
                   setContextMenu(null);
                 }}
-                className="w-full px-3 py-1.5 hover:bg-slate-800 flex items-center gap-2 text-left text-sky-300 font-medium"
+                className="w-full px-3 py-1.5 hover:bg-slate-800 flex items-center gap-2 text-left text-sky-300 font-medium cursor-pointer"
               >
                 <span>✏️</span>
                 <span>Editar Rótulo no Canvas (Inline)</span>
               </button>
 
               <button
-                onClick={() => {
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                }}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
                   const edge = contextMenu.edge!;
+                  lastSelectionTimeRef.current = Date.now();
                   setSelectedEdge(edge);
                   setSelectedNode(null);
                   setSelectedNodeId(null);
                   setContextMenu(null);
                   setTimeout(() => {
-                    edgeLabelInputRef.current?.focus();
-                    edgeLabelInputRef.current?.select();
-                  }, 50);
-                  showToast('Editando rótulo da transição no painel de Propriedades (à direita)', 'info');
+                    if (edgeLabelInputRef.current) {
+                      edgeLabelInputRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                      edgeLabelInputRef.current.focus();
+                      edgeLabelInputRef.current.select();
+                    }
+                  }, 80);
+                  showToast('Editando transição no painel de Propriedades (à direita)', 'info');
                 }}
-                className="w-full px-3 py-1.5 hover:bg-slate-800 flex items-center gap-2 text-left text-sky-300 font-medium"
+                className="w-full px-3 py-1.5 hover:bg-slate-800 flex items-center gap-2 text-left text-sky-300 font-medium cursor-pointer"
               >
                 <span>📋</span>
                 <span>Editar em Propriedades (Painel Lateral)</span>
