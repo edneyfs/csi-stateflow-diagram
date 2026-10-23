@@ -1205,7 +1205,9 @@ export function App() {
   };
 
   const openHelpPortal = () => {
-    window.open('site_suporte/index.html', '_blank');
+    const basePath = import.meta.env.BASE_URL || './';
+    const cleanBase = basePath.endsWith('/') ? basePath : basePath + '/';
+    window.open(cleanBase + 'site_suporte/index.html', '_blank');
   };
 
   return (
