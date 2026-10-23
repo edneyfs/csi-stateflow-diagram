@@ -14,7 +14,7 @@ export class JavaScanner {
 
   /**
    * Varre recursivamente um diretório procurando arquivos .java
-   * e extraindo definições de classes (em especial classes com prefixo 'Mic*')
+   * e extraindo definições de classes (em especial classes com prefixo 'Mic*' / 'MIC*')
    */
   public static async scanDirectory(directoryPath: string, onlyMic: boolean = true): Promise<JavaClassInfo[]> {
     const results: JavaClassInfo[] = [];
@@ -28,14 +28,11 @@ export class JavaScanner {
           if (entry.name !== '.git' && entry.name !== 'node_modules' && entry.name !== 'bin' && entry.name !== 'target') {
             await walk(fullPath);
           }
-        } else if (entry.isFile() && entry.name.endsWith('.java')) {
-          const simpleName = entry.name.replace(/\.java$/, '');
-          const isMic = simpleName.startsWith('Mic');
+        } else if (entry.isFile() && entry.name.toLowerCase().endsWith('.java')) {
+          const simpleName = entry.name.replace(/\.java$/i, '');
+          const isMic = /^mic/i.test(simpleName);
           if (onlyMic && !isMic) continue;
           try {
-            const simpleName = entry.name.replace(/\.java$/, '');
-            const isMic = simpleName.startsWith('Mic');
-
             // Extrai pacote primeiro via caminho de pastas (0ms overhead)
             let pkg = '';
             const normPath = fullPath.replace(/\\/g, '/');
@@ -51,27 +48,31 @@ export class JavaScanner {
             if (!pkg) {
               try {
                 const fd = await fs.promises.open(fullPath, 'r');
-                const buf = Buffer.alloc(1024);
-                const { bytesRead } = await fd.read(buf, 0, 1024, 0);
+                const buffer = Buffer.alloc(1024);
+                const { bytesRead } = await fd.read(buffer, 0, 1024, 0);
                 await fd.close();
-                const header = buf.toString('utf8', 0, bytesRead);
+                const header = buffer.toString('utf8', 0, bytesRead);
                 const pkgMatch = header.match(/package\s+([\w\.]+);/);
-                if (pkgMatch) pkg = pkgMatch[1];
+                if (pkgMatch) {
+                  pkg = pkgMatch[1];
+                }
               } catch {
-                // ignora erro de leitura
+                // ignora se falhar leitura parcial
               }
             }
 
             const fullName = pkg ? `${pkg}.${simpleName}` : simpleName;
+            const relPath = path.relative(directoryPath, fullPath).replace(/\\/g, '/');
+
             results.push({
               className: fullName,
               simpleClassName: simpleName,
               packageName: pkg,
-              filePath: fullPath,
+              filePath: relPath,
               isMic,
             });
           } catch {
-            // Ignora arquivos com erro
+            // Ignora arquivos que não possam ser lidos
           }
         }
       }
@@ -81,26 +82,11 @@ export class JavaScanner {
       await walk(directoryPath);
     }
 
-    this.cachedClasses = results;
-    return results;
+    this.cachedClasses = results.sort((a, b) => a.simpleClassName.localeCompare(b.simpleClassName));
+    return this.cachedClasses;
   }
 
-  /**
-   * Filtra classes em memória por termo de busca e flag MIC
-   */
-  public static search(query: string, onlyMic: boolean = false): JavaClassInfo[] {
-    const term = query.toLowerCase().trim();
-    return this.cachedClasses.filter((item) => {
-      if (onlyMic && !item.isMic) return false;
-      if (!term) return true;
-      return (
-        item.simpleClassName.toLowerCase().includes(term) ||
-        item.packageName.toLowerCase().includes(term)
-      );
-    });
-  }
-
-  public static getCached(): JavaClassInfo[] {
+  public static getCachedClasses(): JavaClassInfo[] {
     return this.cachedClasses;
   }
 }

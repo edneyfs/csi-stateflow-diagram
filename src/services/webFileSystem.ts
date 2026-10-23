@@ -223,25 +223,25 @@ export class WebFileSystemService {
             await walk(entry, nextRelPath);
           }
         } else if (entry.kind === 'file') {
-          const name = entry.name;
+          const lowerName = entry.name.toLowerCase();
           const isDiagram =
-            name.endsWith('.executionflow') ||
-            name.endsWith('.stateflow') ||
-            name.endsWith('.executionflow_diagram') ||
-            name.endsWith('.stateflow_diagram');
+            lowerName.endsWith('.executionflow') ||
+            lowerName.endsWith('.stateflow') ||
+            lowerName.endsWith('.executionflow_diagram') ||
+            lowerName.endsWith('.stateflow_diagram');
 
           if (isDiagram) {
-            const relPath = currentRelPath ? `${currentRelPath}/${name}` : name;
+            const relPath = currentRelPath ? `${currentRelPath}/${entry.name}` : entry.name;
             const folder = currentRelPath;
-            const isExecution = name.includes('executionflow');
+            const isExecution = lowerName.includes('executionflow');
 
             diagrams.push({
-              name,
+              name: entry.name,
               relativePath: relPath,
               folder,
               fullPath: relPath,
               type: isExecution ? 'executionflow' : 'stateflow',
-              isDiagramLayout: name.endsWith('_diagram'),
+              isDiagramLayout: lowerName.endsWith('_diagram'),
             });
           }
         }
@@ -278,14 +278,11 @@ export class WebFileSystemService {
             const nextRelPath = currentRelPath ? `${currentRelPath}/${entry.name}` : entry.name;
             await walk(entry, nextRelPath);
           }
-        } else if (entry.kind === 'file' && entry.name.endsWith('.java')) {
-          const simpleName = entry.name.replace(/\.java$/, '');
-          const isMic = simpleName.startsWith('Mic');
+        } else if (entry.kind === 'file' && entry.name.toLowerCase().endsWith('.java')) {
+          const simpleName = entry.name.replace(/\.java$/i, '');
+          const isMic = /^mic/i.test(simpleName);
           if (onlyMic && !isMic) continue;
           try {
-            const simpleName = entry.name.replace(/\.java$/, '');
-            const isMic = simpleName.startsWith('Mic');
-
             // 1. Extração ultra-rápida do pacote a partir da estrutura de diretórios (0ms overhead)
             let pkg = '';
             const pathParts = currentRelPath.split('/');

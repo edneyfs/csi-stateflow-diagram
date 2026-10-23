@@ -29,14 +29,15 @@ export function OrthogonalEdge({
   });
 
   const label = (data?.label as string) || '';
-  const isStartLink = data?.isStartLink as boolean;
+  const isStartLink = Boolean(data?.isStartLink);
+  const displayLabel = label || (isStartLink ? '' : 'DEFAULT');
   const [isEditing, setIsEditing] = useState(false);
-  const [editVal, setEditVal] = useState(label);
+  const [editVal, setEditVal] = useState(displayLabel);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    setEditVal(label);
-  }, [label]);
+    setEditVal(displayLabel);
+  }, [displayLabel]);
 
   useEffect(() => {
     if (isEditing && inputRef.current) {
@@ -52,7 +53,18 @@ export function OrthogonalEdge({
     }
   };
 
+  const handleContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (typeof (data as any)?.onContextMenu === 'function') {
+      (data as any).onContextMenu(e);
+    } else if (typeof (data as any)?.onSelect === 'function') {
+      (data as any).onSelect();
+    }
+  };
+
   const handleDoubleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
     e.stopPropagation();
     if (!isStartLink) {
       setIsEditing(true);
@@ -65,16 +77,18 @@ export function OrthogonalEdge({
   const handleCommit = (newVal?: string) => {
     const finalVal = (newVal !== undefined ? newVal : editVal).trim();
     setIsEditing(false);
-    if (finalVal && finalVal !== label && typeof (data as any)?.onUpdateLabel === 'function') {
+    if (finalVal && finalVal !== displayLabel && typeof (data as any)?.onUpdateLabel === 'function') {
       (data as any).onUpdateLabel(finalVal);
     }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
+      e.stopPropagation();
       handleCommit();
     } else if (e.key === 'Escape') {
-      setEditVal(label);
+      e.stopPropagation();
+      setEditVal(displayLabel);
       setIsEditing(false);
     }
   };
@@ -85,17 +99,17 @@ export function OrthogonalEdge({
         id={id}
         path={edgePath}
         markerEnd={markerEnd}
-        interactionWidth={25}
+        interactionWidth={30}
         style={{
           ...style,
           stroke: selected ? '#38bdf8' : isStartLink ? '#64748b' : '#94a3b8',
-          strokeWidth: selected ? 3 : 2,
+          strokeWidth: selected ? 3.5 : 2,
           strokeDasharray: isStartLink ? '4 4' : undefined,
           transition: 'stroke 0.2s, stroke-width 0.2s',
           cursor: 'pointer',
         }}
       />
-      {label && (
+      {displayLabel && (
         <EdgeLabelRenderer>
           <div
             style={{
@@ -105,17 +119,21 @@ export function OrthogonalEdge({
             }}
             onClick={handleSelect}
             onDoubleClick={handleDoubleClick}
-            className={`px-2 py-0.5 rounded text-[11px] font-mono font-semibold shadow-md cursor-pointer transition select-none flex items-center gap-1 ${
+            onContextMenu={handleContextMenu}
+            onMouseDown={(e) => e.stopPropagation()}
+            className={`nodrag nopan px-2.5 py-1 rounded text-[11px] font-mono font-semibold shadow-lg cursor-pointer transition select-none flex items-center gap-1.5 ${
               selected
-                ? 'bg-sky-600 text-white border-2 border-sky-300 ring-2 ring-sky-400/50 shadow-sky-500/30 scale-105'
-                : 'bg-slate-800 border border-slate-600 text-slate-200 hover:border-sky-400 hover:text-sky-300'
+                ? 'bg-sky-600 text-white border-2 border-sky-300 ring-4 ring-sky-400/40 shadow-sky-500/40 scale-110 z-30'
+                : 'bg-slate-900/90 border border-slate-600 text-slate-200 hover:border-sky-400 hover:text-sky-300 hover:bg-slate-800'
             }`}
-            title="Clique para selecionar e editar nas propriedades, ou duplo-clique para editar inline"
+            title="Duplo clique: editar na tela | Clique direito: editar em Propriedades"
           >
             {isEditing ? (
               <div
-                className="flex items-center gap-1 bg-slate-900 p-1.5 rounded-lg border border-sky-400 shadow-2xl z-50 backdrop-blur-md"
+                className="nodrag nopan flex items-center gap-1.5 bg-slate-900 p-2 rounded-lg border-2 border-sky-400 shadow-2xl z-50 backdrop-blur-md"
                 onClick={(e) => e.stopPropagation()}
+                onMouseDown={(e) => e.stopPropagation()}
+                onDoubleClick={(e) => e.stopPropagation()}
               >
                 <input
                   ref={inputRef}
@@ -124,10 +142,23 @@ export function OrthogonalEdge({
                   onChange={(e) => setEditVal(e.target.value)}
                   onBlur={() => handleCommit()}
                   onKeyDown={handleKeyDown}
-                  className="bg-slate-950 text-sky-200 border border-sky-500 rounded px-1.5 py-0.5 text-xs font-mono font-bold outline-none w-32 shadow-inner"
+                  className="bg-slate-950 text-sky-200 border border-sky-500 rounded px-2 py-0.5 text-xs font-mono font-bold outline-none w-36 shadow-inner focus:ring-1 focus:ring-sky-300"
                   placeholder="Nome saída..."
+                  autoFocus
                 />
-                <div className="flex gap-0.5">
+                <button
+                  type="button"
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleCommit();
+                  }}
+                  className="px-2 py-0.5 text-[10px] bg-sky-600 hover:bg-sky-500 text-white rounded font-mono font-bold transition shadow"
+                  title="Confirmar"
+                >
+                  OK
+                </button>
+                <div className="flex gap-1 border-l border-slate-700 pl-1.5">
                   {['DEFAULT', 'CONFIRMAR', 'ABANDONAR', 'SUCESSO'].map((preset) => (
                     <button
                       key={preset}
@@ -138,7 +169,7 @@ export function OrthogonalEdge({
                         setEditVal(preset);
                         handleCommit(preset);
                       }}
-                      className="px-1.5 py-0.5 text-[9px] bg-slate-800 hover:bg-sky-600 hover:text-white text-slate-300 rounded font-mono font-semibold transition"
+                      className="px-1.5 py-0.5 text-[9px] bg-slate-800 hover:bg-sky-600 hover:text-white text-slate-300 rounded font-mono font-semibold transition border border-slate-700"
                     >
                       {preset}
                     </button>
@@ -146,7 +177,7 @@ export function OrthogonalEdge({
                 </div>
               </div>
             ) : (
-              <span>{label}</span>
+              <span>{displayLabel}</span>
             )}
           </div>
         </EdgeLabelRenderer>

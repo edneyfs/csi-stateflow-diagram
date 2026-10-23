@@ -30,16 +30,17 @@ export class DiagramScanner {
             await walk(fullPath);
           }
         } else if (entry.isFile()) {
+          const lowerName = entry.name.toLowerCase();
           const isDiagram =
-            entry.name.endsWith('.executionflow') ||
-            entry.name.endsWith('.stateflow') ||
-            entry.name.endsWith('.executionflow_diagram') ||
-            entry.name.endsWith('.stateflow_diagram');
+            lowerName.endsWith('.executionflow') ||
+            lowerName.endsWith('.stateflow') ||
+            lowerName.endsWith('.executionflow_diagram') ||
+            lowerName.endsWith('.stateflow_diagram');
 
           if (isDiagram) {
             const relPath = path.relative(workspacePath, fullPath).replace(/\\/g, '/');
             const folder = path.dirname(relPath) === '.' ? '' : path.dirname(relPath);
-            const isExecution = entry.name.includes('executionflow');
+            const isExecution = lowerName.includes('executionflow');
 
             diagrams.push({
               name: entry.name,
@@ -47,7 +48,7 @@ export class DiagramScanner {
               folder: folder,
               fullPath: fullPath,
               type: isExecution ? 'executionflow' : 'stateflow',
-              isDiagramLayout: entry.name.endsWith('_diagram'),
+              isDiagramLayout: lowerName.endsWith('_diagram'),
             });
           }
         }
@@ -58,7 +59,6 @@ export class DiagramScanner {
       await walk(workspacePath);
     }
 
-    // Identifica quais diagramas semânticos possuem arquivo de layout original (.diagram)
     const allPaths = new Set(diagrams.map((d) => d.relativePath));
     for (const d of diagrams) {
       if (!d.isDiagramLayout) {

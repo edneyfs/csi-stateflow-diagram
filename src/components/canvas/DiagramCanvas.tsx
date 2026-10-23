@@ -32,6 +32,7 @@ export interface DiagramCanvasProps {
   selectedEdgeId?: string | null;
   selectedNodeId?: string | null;
   onContextMenuNode: (event: React.MouseEvent, node: Node) => void;
+  onContextMenuEdge?: (event: React.MouseEvent, edge: Edge) => void;
   onDropNewNode?: (type: 'startPoint' | 'executable' | 'subflow' | 'result', position: { x: number; y: number }) => void;
   onDeleteNode?: (nodeId: string) => void;
   onDeleteEdge?: (edgeId: string) => void;
@@ -49,6 +50,7 @@ function DiagramCanvasInternal({
   selectedEdgeId,
   selectedNodeId,
   onContextMenuNode,
+  onContextMenuEdge,
   onDropNewNode,
   onDeleteNode,
   onDeleteEdge,
@@ -90,6 +92,18 @@ function DiagramCanvasInternal({
       onSelectNode(null);
     },
     [onSelectEdge, onSelectNode]
+  );
+
+  const onEdgeContextMenu = useCallback(
+    (event: React.MouseEvent, edge: Edge) => {
+      event.preventDefault();
+      onSelectEdge(edge);
+      onSelectNode(null);
+      if (onContextMenuEdge) {
+        onContextMenuEdge(event, edge);
+      }
+    },
+    [onSelectEdge, onSelectNode, onContextMenuEdge]
   );
 
   const onSelectionChange = useCallback(
@@ -173,6 +187,15 @@ function DiagramCanvasInternal({
           onSelectEdge(e);
           onSelectNode(null);
         },
+        onContextMenu: (evt: React.MouseEvent) => {
+          evt.preventDefault();
+          evt.stopPropagation();
+          onSelectEdge(e);
+          onSelectNode(null);
+          if (onContextMenuEdge) {
+            onContextMenuEdge(evt, e);
+          }
+        },
         onUpdateLabel: (newLabel: string) => {
           if (onUpdateEdgeLabel) {
             onUpdateEdgeLabel(e.id, newLabel);
@@ -180,7 +203,7 @@ function DiagramCanvasInternal({
         },
       },
     }));
-  }, [edges, selectedEdgeId, onSelectEdge, onSelectNode, onUpdateEdgeLabel]);
+  }, [edges, selectedEdgeId, onSelectEdge, onSelectNode, onContextMenuEdge, onUpdateEdgeLabel]);
 
   return (
     <div
@@ -197,6 +220,7 @@ function DiagramCanvasInternal({
         onNodeClick={onNodeClick}
         onEdgeClick={onEdgeClick}
         onNodeContextMenu={onContextMenuNode}
+        onEdgeContextMenu={onEdgeContextMenu}
         onPaneClick={onPaneClick}
         onSelectionChange={onSelectionChange}
         onNodesDelete={onNodesDelete}

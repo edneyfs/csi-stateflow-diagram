@@ -329,17 +329,7 @@ export function App() {
 
   // Pasta persistida no IndexedDB para reconexão em 1 clique
   const [storedDirectoryName, setStoredDirectoryName] = useState<string | null>(null);
-
-  // Inicialização: checa se há pasta salva no IndexedDB quando rodando no navegador
-  useEffect(() => {
-    if (!window.api && WebFileSystemService.isSupported()) {
-      WebFileSystemService.getStoredDirectory().then((handle) => {
-        if (handle) {
-          setStoredDirectoryName(handle.name);
-        }
-      });
-    }
-  }, []);
+  const [isScanningWorkspace, setIsScanningWorkspace] = useState<boolean>(false);
 
   // Classes Java escaneadas dinamicamente
   const [scannedJavaClasses, setScannedJavaClasses] = useState<Array<{ name: string; pkg: string }>>([]);
@@ -357,11 +347,12 @@ export function App() {
     results: [],
   });
 
-  // Menu de Contexto do Nó
+  // Menu de Contexto do Nó e Transição
   const [contextMenu, setContextMenu] = useState<{
     x: number;
     y: number;
     node: Node | null;
+    edge?: Edge | null;
   } | null>(null);
 
   // Carrega e renderiza um diagrama a partir do arquivo XML (Desktop ou Web)
@@ -483,15 +474,16 @@ export function App() {
     [showToast]
   );
 
-  // Varredura de diagramas e classes via Electron IPC quando o workspace muda
-  useEffect(() => {
-    if (window.api && workspacePath) {
-      window.api.scanDiagrams(workspacePath).then((files) => {
-        if (files && files.length > 0) {
-          setDiagramList(files);
-        }
-      });
-      window.api.scanJavaClasses(workspacePath).then((classes) => {
+  // Varredura unificada e automática do workspace (Diagramas + Classes MIC)
+  const scanWorkspace = useCallback(async (target: string | any) => {
+    setIsScanningWorkspace(true);
+    try {
+      if (typeof target === 'string' && window.api) {
+        const [files, classes] = await Promise.all([
+          window.api.scanDiagrams(target),
+          window.api.scanJavaClasses(target),
+        ]);
+        if (files && files.length > 0) setDiagramList(files);
         if (classes && classes.length > 0) {
           setScannedJavaClasses(
             classes.map((c) => ({
@@ -500,9 +492,72 @@ export function App() {
             }))
           );
         }
+        const micCount = (classes || []).filter((c) => c.isMic || /^mic/i.test(c.simpleClassName || c.className)).length;
+        const semanticCount = (files || []).filter((f) => !f.isDiagramLayout).length;
+        const layoutCount = (files || []).filter((f) => f.isDiagramLayout).length;
+        showToast(
+          `Workspace indexado: ${semanticCount} diagramas (${layoutCount} layouts) e ${micCount} classes MIC localizadas!`,
+          'success'
+        );
+      } else if (target && typeof target === 'object') {
+        const [files, classes] = await Promise.all([
+          WebFileSystemService.scanDiagrams(target),
+          WebFileSystemService.scanJavaClasses(target, true),
+        ]);
+        if (files && files.length > 0) setDiagramList(files);
+        if (classes && classes.length > 0) {
+          setScannedJavaClasses(
+            classes.map((c) => ({
+              name: c.simpleClassName || c.className.split('.').pop() || c.className,
+              pkg: c.className || c.packageName,
+            }))
+          );
+        }
+        const micCount = (classes || []).filter((c) => c.isMic || /^mic/i.test(c.simpleClassName || c.className)).length;
+        const semanticCount = (files || []).filter((f) => !f.isDiagramLayout).length;
+        const layoutCount = (files || []).filter((f) => f.isDiagramLayout).length;
+        showToast(
+          `Workspace indexado: ${semanticCount} diagramas (${layoutCount} layouts) e ${micCount} classes MIC localizadas!`,
+          'success'
+        );
+      }
+    } catch (err: any) {
+      console.error('Erro na varredura do workspace:', err);
+      showToast(`Aviso na varredura: ${err.message || err}`, 'error');
+    } finally {
+      setIsScanningWorkspace(false);
+    }
+  }, [showToast]);
+
+  // Inicialização Web: auto-reconecta e varre se permissão já concedida
+  useEffect(() => {
+    if (!window.api && WebFileSystemService.isSupported()) {
+      WebFileSystemService.getStoredDirectory().then(async (handle) => {
+        if (handle) {
+          try {
+            const hasPerm = await (handle as any).queryPermission({ mode: 'readwrite' });
+            if (hasPerm === 'granted') {
+              WebFileSystemService.setCurrentHandle(handle);
+              setWorkspacePath(handle.name);
+              setStoredDirectoryName(null);
+              scanWorkspace(handle);
+              return;
+            }
+          } catch {
+            // Requer interação do usuário
+          }
+          setStoredDirectoryName(handle.name);
+        }
       });
     }
-  }, [workspacePath]);
+  }, [scanWorkspace]);
+
+  // Inicialização Electron: varre quando o workspacePath muda
+  useEffect(() => {
+    if (window.api && workspacePath) {
+      scanWorkspace(workspacePath);
+    }
+  }, [workspacePath, scanWorkspace]);
 
   // Lista combinada de classes Java (mock + varredura real)
   const defaultJavaClasses = useMemo(
@@ -558,13 +613,13 @@ export function App() {
   const micSuggestions = useMemo(() => {
     if (!activeNode || activeNode.type !== 'executable') return [];
     return javaClasses
-      .filter((c) => c.name.startsWith('Mic') && matchClassPattern(activeNodeTitle, c))
+      .filter((c) => /^mic/i.test(c.name) && matchClassPattern(activeNodeTitle, c))
       .slice(0, 25);
   }, [activeNode, activeNodeTitle, javaClasses, matchClassPattern]);
 
   const filteredClasses = useMemo(() => {
     return javaClasses.filter((c) => {
-      if (!c.name.startsWith('Mic')) return false;
+      if (!/^mic/i.test(c.name)) return false;
       if (!javaSearch) return true;
       return (
         matchClassPattern(javaSearch, c) ||
@@ -750,7 +805,7 @@ export function App() {
   );
 
   const handleUpdateEdgeLabelById = useCallback(
-    (edgeId: string, newLabel: string) => {
+    (edgeId: string, newLabel: string, showNotification: boolean = false) => {
       const targetEdge = currentEdges.find((e) => e.id === edgeId) || selectedEdge;
       if (!targetEdge) return;
 
@@ -783,15 +838,17 @@ export function App() {
         return prev;
       });
 
-      showToast(`Saída da transição alterada para "${newLabel}"`, 'success');
+      if (showNotification) {
+        showToast(`Saída da transição alterada para "${newLabel}"`, 'success');
+      }
     },
     [currentEdges, selectedEdge, showToast]
   );
 
   const handleUpdateEdgeLabel = useCallback(
-    (newLabel: string) => {
+    (newLabel: string, showNotification: boolean = false) => {
       if (!selectedEdge) return;
-      handleUpdateEdgeLabelById(selectedEdge.id, newLabel);
+      handleUpdateEdgeLabelById(selectedEdge.id, newLabel, showNotification);
     },
     [selectedEdge, handleUpdateEdgeLabelById]
   );
@@ -974,10 +1031,25 @@ export function App() {
   const handleContextMenuNode = useCallback((event: React.MouseEvent, node: Node) => {
     event.preventDefault();
     setSelectedNode(node);
+    setSelectedEdge(null);
     setContextMenu({
       x: event.clientX,
       y: event.clientY,
       node,
+      edge: null,
+    });
+  }, []);
+
+  const handleContextMenuEdge = useCallback((event: React.MouseEvent, edge: Edge) => {
+    event.preventDefault();
+    setSelectedEdge(edge);
+    setSelectedNode(null);
+    setSelectedNodeId(null);
+    setContextMenu({
+      x: event.clientX,
+      y: event.clientY,
+      node: null,
+      edge,
     });
   }, []);
 
@@ -1049,29 +1121,7 @@ export function App() {
       if (handle) {
         setWorkspacePath(handle.name);
         setStoredDirectoryName(null);
-
-        const files = await WebFileSystemService.scanDiagrams(handle);
-        if (files && files.length > 0) {
-          setDiagramList(files);
-        }
-
-        const classes = await WebFileSystemService.scanJavaClasses(handle);
-        if (classes && classes.length > 0) {
-          setScannedJavaClasses(
-            classes.map((c) => ({
-              name: c.simpleClassName || c.className.split('.').pop() || c.className,
-              pkg: c.className || c.packageName,
-            }))
-          );
-        }
-
-        const micCount = (classes || []).filter((c) => c.isMic).length;
-        const semanticCount = (files || []).filter((f) => !f.isDiagramLayout).length;
-        const layoutCount = (files || []).filter((f) => f.isDiagramLayout).length;
-        showToast(
-          `Pasta "${handle.name}" reconectada: ${semanticCount} diagramas (${layoutCount} layouts) e ${micCount} classes MIC indexadas!`,
-          'success'
-        );
+        await scanWorkspace(handle);
       } else {
         showToast('Permissão de acesso à pasta não foi autorizada.', 'error');
       }
@@ -1087,29 +1137,7 @@ export function App() {
         setWorkspacePath(selected);
         localStorage.setItem('csi_workspace_path', selected);
         setShowWorkspaceModal(false);
-
-        const files = await window.api.scanDiagrams(selected);
-        if (files && files.length > 0) {
-          setDiagramList(files);
-        }
-
-        const classes = await window.api.scanJavaClasses(selected);
-        if (classes && classes.length > 0) {
-          setScannedJavaClasses(
-            classes.map((c) => ({
-              name: c.simpleClassName || c.className.split('.').pop() || c.className,
-              pkg: c.className || c.packageName,
-            }))
-          );
-        }
-
-        const micCount = (classes || []).filter((c) => c.isMic).length;
-        const semanticCount = (files || []).filter((f) => !f.isDiagramLayout).length;
-        const layoutCount = (files || []).filter((f) => f.isDiagramLayout).length;
-        showToast(
-          `Workspace carregado: ${semanticCount} diagramas (${layoutCount} layouts) e ${micCount} classes MIC indexadas!`,
-          'success'
-        );
+        await scanWorkspace(selected);
       }
     } else if (WebFileSystemService.isSupported()) {
       try {
@@ -1119,29 +1147,7 @@ export function App() {
           setStoredDirectoryName(null);
           localStorage.setItem('csi_workspace_path', handle.name);
           setShowWorkspaceModal(false);
-
-          const files = await WebFileSystemService.scanDiagrams(handle);
-          if (files && files.length > 0) {
-            setDiagramList(files);
-          }
-
-          const classes = await WebFileSystemService.scanJavaClasses(handle);
-          if (classes && classes.length > 0) {
-            setScannedJavaClasses(
-              classes.map((c) => ({
-                name: c.simpleClassName || c.className.split('.').pop() || c.className,
-                pkg: c.className || c.packageName,
-              }))
-            );
-          }
-
-          const micCount = (classes || []).filter((c) => c.isMic).length;
-          const semanticCount = (files || []).filter((f) => !f.isDiagramLayout).length;
-          const layoutCount = (files || []).filter((f) => f.isDiagramLayout).length;
-          showToast(
-            `Workspace carregado: ${semanticCount} diagramas (${layoutCount} layouts) e ${micCount} classes MIC indexadas!`,
-            'success'
-          );
+          await scanWorkspace(handle);
         }
       } catch (err: any) {
         showToast(`Erro ao selecionar pasta: ${err.message || err}`, 'error');
@@ -1491,13 +1497,12 @@ export function App() {
                   Classes MIC ({filteredClasses.length})
                 </span>
               </div>
-              <button
-                onClick={handleChooseWorkspaceFolder}
-                className="text-[10px] px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-sky-300 border border-slate-700 transition"
-                title="Carregar pasta do projeto (ou subpasta de fontes)"
-              >
-                + Carregar
-              </button>
+              {isScanningWorkspace && (
+                <span className="flex items-center gap-1 text-[10px] text-sky-400 font-mono animate-pulse">
+                  <RefreshCw className="w-3 h-3 animate-spin" />
+                  <span>Indexando...</span>
+                </span>
+              )}
             </div>
 
             <div className="px-2 pt-1.5">
@@ -1562,10 +1567,11 @@ export function App() {
               selectedEdgeId={selectedEdge?.id}
               selectedNodeId={selectedNodeId}
               onContextMenuNode={handleContextMenuNode}
+              onContextMenuEdge={handleContextMenuEdge}
               onDropNewNode={(type, pos) => handleCreateNode(type, pos)}
               onDeleteNode={handleDeleteNode}
               onDeleteEdge={handleDeleteEdge}
-              onUpdateEdgeLabel={handleUpdateEdgeLabelById}
+              onUpdateEdgeLabel={(id, label) => handleUpdateEdgeLabelById(id, label, true)}
             />
           </div>
 
@@ -2048,60 +2054,113 @@ export function App() {
         </div>
       )}
 
-      {/* 4. Menu de Contexto do Nó */}
+      {/* 4. Menu de Contexto do Nó e Transição */}
       {contextMenu && (
         <div
           style={{ top: contextMenu.y, left: contextMenu.x }}
-          className="fixed bg-slate-900 border border-slate-700 shadow-2xl rounded-md py-1.5 z-50 text-xs text-slate-200 min-w-[210px] backdrop-blur"
+          className="fixed bg-slate-900 border border-slate-700 shadow-2xl rounded-md py-1.5 z-50 text-xs text-slate-200 min-w-[230px] backdrop-blur"
           onClick={(e) => e.stopPropagation()}
         >
-          <button
-            onClick={() => {
-              alert('Nota adicionada ao diagrama!');
-              setContextMenu(null);
-            }}
-            className="w-full px-3 py-1.5 hover:bg-slate-800 flex items-center gap-2 text-left"
-          >
-            <span>📝</span>
-            <span>Add Note</span>
-          </button>
-          <button
-            onClick={() => {
-              handleSearchReferences(
-                (contextMenu.node?.data?.title as string) || contextMenu.node?.id || ''
-              );
-            }}
-            className="w-full px-3 py-1.5 hover:bg-slate-800 flex items-center gap-2 text-left text-sky-300 font-medium"
-          >
-            <span>🔍</span>
-            <span>Search execution flow diagram references...</span>
-          </button>
-          <button
-            onClick={() => {
-              if (contextMenu.node) {
-                setSelectedNode(contextMenu.node);
-                setSelectedNodeId(contextMenu.node.id);
-              }
-              setContextMenu(null);
-            }}
-            className="w-full px-3 py-1.5 hover:bg-slate-800 flex items-center gap-2 text-left"
-          >
-            <span>📋</span>
-            <span>Show Properties View</span>
-          </button>
-          <div className="h-[1px] bg-slate-800 my-1" />
-          <button
-            onClick={() => {
-              if (contextMenu.node) {
-                handleDeleteNode(contextMenu.node.id);
-              }
-              setContextMenu(null);
-            }}
-            className="w-full px-3 py-1.5 hover:bg-red-950 text-red-400 flex items-center gap-2 text-left"
-          >
-            <span>❌</span>
-            <span>Delete from Model</span>
-          </button>
+          {contextMenu.edge ? (
+            <>
+              <div className="px-3 py-1.5 text-[11px] font-mono font-bold text-sky-400 border-b border-slate-800 flex items-center justify-between">
+                <span>Transição</span>
+                <span className="text-[10px] bg-sky-950 px-1.5 py-0.5 rounded border border-sky-800 text-sky-300">
+                  {(contextMenu.edge.data?.label as string) || 'DEFAULT'}
+                </span>
+              </div>
+              <button
+                onClick={() => {
+                  setSelectedEdge(contextMenu.edge!);
+                  setSelectedNode(null);
+                  setSelectedNodeId(null);
+                  setContextMenu(null);
+                }}
+                className="w-full px-3 py-1.5 hover:bg-slate-800 flex items-center gap-2 text-left text-sky-300 font-medium"
+              >
+                <span>✏️</span>
+                <span>Editar Rótulo em Propriedades</span>
+              </button>
+              <div className="h-[1px] bg-slate-800 my-1" />
+              <div className="px-3 py-1 text-[10px] uppercase font-semibold text-slate-500">
+                Atalhos Rápidos:
+              </div>
+              {['DEFAULT', 'CONFIRMAR', 'ABANDONAR', 'SUCESSO'].map((preset) => (
+                <button
+                  key={preset}
+                  onClick={() => {
+                    handleUpdateEdgeLabelById(contextMenu.edge!.id, preset, true);
+                    setContextMenu(null);
+                  }}
+                  className="w-full px-3 py-1 hover:bg-slate-800 flex items-center justify-between text-left text-slate-300 font-mono text-[11px]"
+                >
+                  <span>Definir "{preset}"</span>
+                  <span className="text-[9px] text-slate-500 font-sans">preset</span>
+                </button>
+              ))}
+              <div className="h-[1px] bg-slate-800 my-1" />
+              <button
+                onClick={() => {
+                  handleDeleteEdge(contextMenu.edge!.id);
+                  setContextMenu(null);
+                }}
+                className="w-full px-3 py-1.5 hover:bg-red-950 text-red-400 flex items-center gap-2 text-left"
+              >
+                <span>❌</span>
+                <span>Excluir Transição (Delete Step)</span>
+              </button>
+            </>
+          ) : contextMenu.node ? (
+            <>
+              <button
+                onClick={() => {
+                  alert('Nota adicionada ao diagrama!');
+                  setContextMenu(null);
+                }}
+                className="w-full px-3 py-1.5 hover:bg-slate-800 flex items-center gap-2 text-left"
+              >
+                <span>📝</span>
+                <span>Add Note</span>
+              </button>
+              <button
+                onClick={() => {
+                  handleSearchReferences(
+                    (contextMenu.node?.data?.title as string) || contextMenu.node?.id || ''
+                  );
+                }}
+                className="w-full px-3 py-1.5 hover:bg-slate-800 flex items-center gap-2 text-left text-sky-300 font-medium"
+              >
+                <span>🔍</span>
+                <span>Search execution flow diagram references...</span>
+              </button>
+              <button
+                onClick={() => {
+                  if (contextMenu.node) {
+                    setSelectedNode(contextMenu.node);
+                    setSelectedNodeId(contextMenu.node.id);
+                  }
+                  setContextMenu(null);
+                }}
+                className="w-full px-3 py-1.5 hover:bg-slate-800 flex items-center gap-2 text-left"
+              >
+                <span>📋</span>
+                <span>Show Properties View</span>
+              </button>
+              <div className="h-[1px] bg-slate-800 my-1" />
+              <button
+                onClick={() => {
+                  if (contextMenu.node) {
+                    handleDeleteNode(contextMenu.node.id);
+                  }
+                  setContextMenu(null);
+                }}
+                className="w-full px-3 py-1.5 hover:bg-red-950 text-red-400 flex items-center gap-2 text-left"
+              >
+                <span>❌</span>
+                <span>Delete from Model</span>
+              </button>
+            </>
+          ) : null}
         </div>
       )}
 
