@@ -12,6 +12,7 @@
 - [Estrutura do Projeto](#-estrutura-do-projeto)
 - [Pré-requisitos](#-pré-requisitos)
 - [Guia de Comandos](#-guia-de-comandos)
+- [Extensão para VS Code & Antigravity IDE](#-extensão-para-vs-code--antigravity-ide)
 - [Central de Documentação Viva & GIFs](#-central-de-documentação-viva--gifs)
 - [Compatibilidade XML com P2K](#-compatibilidade-xml-com-p2k)
 - [Testes Automatizados](#-testes-automatizados)
@@ -153,6 +154,41 @@ Empacota a aplicação gerando o executável standalone portátil para distribui
 npm run package
 ```
 
+### 8. Compilar e Empacotar a Extensão para VS Code / Antigravity (`.vsix`)
+Compila os assets web, o TypeScript da extensão e gera o pacote de instalação:
+```bash
+npm run package:vscode
+```
+
+---
+
+## 💻 Extensão para VS Code & Antigravity IDE
+
+O **CSI StateFlow Studio** opera nativamente como extensão (`CustomTextEditorProvider`) tanto no **Visual Studio Code** quanto no **Google Antigravity**:
+
+### Opção 1: Instalando o pacote .vsix diretamente no Antigravity (Recomendado)
+
+O pacote da extensão compilado encontra-se em `vscode-extension/`:
+
+#### Pelo Terminal Integrado:
+```bash
+code --install-extension vscode-extension/csi-stateflow-vscode-0.1.11.vsix
+```
+
+#### Pela Interface Visual:
+1. Abra a aba de **Extensões** na barra lateral esquerda (`Ctrl + Shift + X`).
+2. Clique no menu de **três pontinhos (`...`)** no canto superior do painel de extensões.
+3. Selecione **"Install from VSIX..."** (*Instalar a partir de VSIX...*).
+4. Escolha o arquivo `vscode-extension/csi-stateflow-vscode-0.1.11.vsix` (ou a versão mais recente).
+5. Abra qualquer arquivo `.executionflow` ou `.stateflow` na árvore de arquivos (ex: `samples/pdv/7026_CONFIRMACAO_AJUSTES.executionflow`). O diagrama abrirá automaticamente com o editor visual!
+
+### Opção 2: Teste Rápido no Navegador (Web Preview)
+Graças à parametrização por ambiente (`EnvironmentService`), você pode visualizar a interface do modo VS Code diretamente no navegador:
+```bash
+npm run dev
+# Acesse: http://localhost:5173/?env=vscode
+```
+
 ---
 
 ## 🎞️ Central de Documentação Viva & GIFs
@@ -205,7 +241,7 @@ A suíte de testes unitários é executada com `npm test`:
 ✔ ReferenceEngine - Indexação e Busca Cruzada de Diagramas
 ✔ XmlEngine - Parsing & Serialization de ExecutionFlow (7026_CONFIRMACAO_AJUSTES)
 ✔ XmlEngine - Parsing & Serialization de StateFlow
-ℹ tests 9 | pass 9 | fail 0 (100% de sucesso)
+ℹ tests 23 | pass 23 | fail 0 (100% de sucesso)
 ```
 
 ---

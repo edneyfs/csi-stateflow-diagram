@@ -1,6 +1,6 @@
 {
   "name": "csi-stateflow-studio",
-  "version": "0.1.10",
+  "version": "0.1.11",
   "description": "Studio visual independente para máquinas de estado CSI/P2K (.stateflow e .executionflow)",
   "main": "dist-electron/electron/main.js",
   "scripts": {
