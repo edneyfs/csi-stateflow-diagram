@@ -265,7 +265,8 @@ export class WebFileSystemService {
    * Varre recursivamente os arquivos .java do workspace e extrai classes MICs
    */
   public static async scanJavaClasses(
-    root: FileSystemDirectoryHandle = this.currentHandle!
+    root: FileSystemDirectoryHandle = this.currentHandle!,
+    onlyMic: boolean = true
   ): Promise<JavaClassInfo[]> {
     if (!root) return [];
     const results: JavaClassInfo[] = [];
@@ -278,6 +279,9 @@ export class WebFileSystemService {
             await walk(entry, nextRelPath);
           }
         } else if (entry.kind === 'file' && entry.name.endsWith('.java')) {
+          const simpleName = entry.name.replace(/\.java$/, '');
+          const isMic = simpleName.startsWith('Mic');
+          if (onlyMic && !isMic) continue;
           try {
             const simpleName = entry.name.replace(/\.java$/, '');
             const isMic = simpleName.startsWith('Mic');

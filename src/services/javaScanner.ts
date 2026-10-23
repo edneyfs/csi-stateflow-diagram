@@ -16,7 +16,7 @@ export class JavaScanner {
    * Varre recursivamente um diretório procurando arquivos .java
    * e extraindo definições de classes (em especial classes com prefixo 'Mic*')
    */
-  public static async scanDirectory(directoryPath: string): Promise<JavaClassInfo[]> {
+  public static async scanDirectory(directoryPath: string, onlyMic: boolean = true): Promise<JavaClassInfo[]> {
     const results: JavaClassInfo[] = [];
 
     async function walk(dir: string) {
@@ -29,6 +29,9 @@ export class JavaScanner {
             await walk(fullPath);
           }
         } else if (entry.isFile() && entry.name.endsWith('.java')) {
+          const simpleName = entry.name.replace(/\.java$/, '');
+          const isMic = simpleName.startsWith('Mic');
+          if (onlyMic && !isMic) continue;
           try {
             const simpleName = entry.name.replace(/\.java$/, '');
             const isMic = simpleName.startsWith('Mic');

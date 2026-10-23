@@ -35,6 +35,7 @@ export interface DiagramCanvasProps {
   onDropNewNode?: (type: 'startPoint' | 'executable' | 'subflow' | 'result', position: { x: number; y: number }) => void;
   onDeleteNode?: (nodeId: string) => void;
   onDeleteEdge?: (edgeId: string) => void;
+  onUpdateEdgeLabel?: (edgeId: string, newLabel: string) => void;
 }
 
 function DiagramCanvasInternal({
@@ -51,6 +52,7 @@ function DiagramCanvasInternal({
   onDropNewNode,
   onDeleteNode,
   onDeleteEdge,
+  onUpdateEdgeLabel,
 }: DiagramCanvasProps) {
   const { screenToFlowPosition } = useReactFlow();
 
@@ -162,12 +164,23 @@ function DiagramCanvasInternal({
   }, [nodes, selectedNodeId]);
 
   const mappedEdges = useMemo(() => {
-    if (!selectedEdgeId) return edges;
     return edges.map((e) => ({
       ...e,
       selected: e.id === selectedEdgeId,
+      data: {
+        ...e.data,
+        onSelect: () => {
+          onSelectEdge(e);
+          onSelectNode(null);
+        },
+        onUpdateLabel: (newLabel: string) => {
+          if (onUpdateEdgeLabel) {
+            onUpdateEdgeLabel(e.id, newLabel);
+          }
+        },
+      },
     }));
-  }, [edges, selectedEdgeId]);
+  }, [edges, selectedEdgeId, onSelectEdge, onSelectNode, onUpdateEdgeLabel]);
 
   return (
     <div

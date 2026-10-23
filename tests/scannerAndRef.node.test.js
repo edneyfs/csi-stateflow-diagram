@@ -9,7 +9,7 @@ test('JavaScanner - Varredura real em diretório de fontes', async () => {
   const fonteDir = path.join(__dirname, '../fonte/projetos');
   
   if (fs.existsSync(fonteDir)) {
-    const classes = await JavaScanner.scanDirectory(fonteDir);
+    const classes = await JavaScanner.scanDirectory(fonteDir, false);
     assert.ok(classes.length > 0, 'Deveria encontrar classes Java nos fontes extraídos');
     
     // Testa busca

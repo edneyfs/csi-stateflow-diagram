@@ -282,7 +282,7 @@ export function App() {
   // Lista de TODOS os diagramas encontrados no workspace
   const [diagramList, setDiagramList] = useState<DiagramFileInfo[]>(defaultMockDiagrams);
   const [diagramSearch, setDiagramSearch] = useState<string>('');
-  const [diagramTypeFilter, setDiagramTypeFilter] = useState<'all' | 'executionflow' | 'stateflow'>('all');
+  const [diagramTypeFilter, setDiagramTypeFilter] = useState<'all' | 'semantic' | 'executionflow' | 'stateflow' | 'layout'>('all');
   const [showLayoutDiagrams, setShowLayoutDiagrams] = useState<boolean>(false);
 
   // Abas e nós ativos no canvas
@@ -552,18 +552,18 @@ export function App() {
     return terms.every((t) => target.includes(t));
   }, []);
 
-  // Sugestões calculadas dinamicamente para o nó Action selecionado
+  // Sugestões calculadas dinamicamente para o nó Action selecionado (100% estrito MIC*)
   const activeNodeTitle = (activeNode?.data?.title as string) || '';
   const micSuggestions = useMemo(() => {
     if (!activeNode || activeNode.type !== 'executable') return [];
     return javaClasses
-      .filter((c) => matchClassPattern(activeNodeTitle, c))
-      .slice(0, 15);
+      .filter((c) => c.name.startsWith('Mic') && matchClassPattern(activeNodeTitle, c))
+      .slice(0, 25);
   }, [activeNode, activeNodeTitle, javaClasses, matchClassPattern]);
 
   const filteredClasses = useMemo(() => {
     return javaClasses.filter((c) => {
-      if (micOnly && !c.name.startsWith('Mic')) return false;
+      if (!c.name.startsWith('Mic')) return false;
       if (!javaSearch) return true;
       return (
         matchClassPattern(javaSearch, c) ||
@@ -571,17 +571,16 @@ export function App() {
         c.pkg.toLowerCase().includes(javaSearch.toLowerCase())
       );
     });
-  }, [javaClasses, javaSearch, micOnly, matchClassPattern]);
+  }, [javaClasses, javaSearch, matchClassPattern]);
 
-  // Filtro da lista de diagramas no painel esquerdo
+  // Filtro da lista de diagramas no painel esquerdo com abas dedicadas
   const filteredDiagrams = useMemo(() => {
     return diagramList.filter((d) => {
-      // Oculta arquivos puramente de layout notation (_diagram) da listagem principal
-      // se showLayoutDiagrams estiver desligado e o usuário não pesquisar por _diagram
-      const isSearchingDiagram = diagramSearch.toLowerCase().includes('_diagram');
-      if (d.isDiagramLayout && !showLayoutDiagrams && !isSearchingDiagram) return false;
+      if (diagramTypeFilter === 'semantic' && d.isDiagramLayout) return false;
+      if (diagramTypeFilter === 'layout' && !d.isDiagramLayout) return false;
+      if (diagramTypeFilter === 'executionflow' && (d.type !== 'executionflow' || d.isDiagramLayout)) return false;
+      if (diagramTypeFilter === 'stateflow' && (d.type !== 'stateflow' || d.isDiagramLayout)) return false;
 
-      if (diagramTypeFilter !== 'all' && d.type !== diagramTypeFilter) return false;
       if (!diagramSearch) return true;
       const term = diagramSearch.toLowerCase();
       return (
@@ -590,7 +589,7 @@ export function App() {
         d.relativePath.toLowerCase().includes(term)
       );
     });
-  }, [diagramList, diagramSearch, diagramTypeFilter, showLayoutDiagrams]);
+  }, [diagramList, diagramSearch, diagramTypeFilter]);
 
   const onNodesChange = useCallback((changes: NodeChange[]) => {
     setCurrentNodes((nds) => applyNodeChanges(changes, nds));
@@ -749,18 +748,19 @@ export function App() {
     [currentNodes.length, showToast]
   );
 
-  const handleUpdateEdgeLabel = useCallback(
-    (newLabel: string) => {
-      if (!selectedEdge) return;
+  const handleUpdateEdgeLabelById = useCallback(
+    (edgeId: string, newLabel: string) => {
+      const targetEdge = currentEdges.find((e) => e.id === edgeId) || selectedEdge;
+      if (!targetEdge) return;
 
       const updatedEdge = {
-        ...selectedEdge,
-        data: { ...selectedEdge.data, label: newLabel },
+        ...targetEdge,
+        data: { ...targetEdge.data, label: newLabel },
       };
       setSelectedEdge(updatedEdge);
 
       setCurrentEdges((eds) =>
-        eds.map((e) => (e.id === selectedEdge.id ? updatedEdge : e))
+        eds.map((e) => (e.id === edgeId ? updatedEdge : e))
       );
 
       // Sincroniza com o modelo XML
@@ -770,8 +770,8 @@ export function App() {
           const exec = prev as ExecutionFlowModel;
           const newConns = exec.flowConnections?.map((conn) => {
             if (
-              conn.sourcePathKey === selectedEdge.source &&
-              conn.destinationPathKey === selectedEdge.target
+              conn.sourcePathKey === targetEdge.source &&
+              conn.destinationPathKey === targetEdge.target
             ) {
               return { ...conn, executionFlowResultValue: newLabel };
             }
@@ -781,8 +781,18 @@ export function App() {
         }
         return prev;
       });
+
+      showToast(`Saída da transição alterada para "${newLabel}"`, 'success');
     },
-    [selectedEdge]
+    [currentEdges, selectedEdge, showToast]
+  );
+
+  const handleUpdateEdgeLabel = useCallback(
+    (newLabel: string) => {
+      if (!selectedEdge) return;
+      handleUpdateEdgeLabelById(selectedEdge.id, newLabel);
+    },
+    [selectedEdge, handleUpdateEdgeLabelById]
   );
 
   const handleDeleteEdge = useCallback(
@@ -1347,59 +1357,61 @@ export function App() {
               />
             </div>
 
-            {/* Tabs de Filtro de Tipo */}
-            <div className="flex items-center gap-1 text-[11px]">
+            {/* Tabs de Filtro de Tipo com Contadores Reais */}
+            <div className="flex flex-wrap items-center gap-1 text-[10px]">
               <button
                 onClick={() => setDiagramTypeFilter('all')}
-                className={`flex-1 py-1 rounded text-center transition font-medium ${
+                className={`px-2 py-1 rounded text-center transition font-medium ${
                   diagramTypeFilter === 'all'
                     ? 'bg-slate-800 text-sky-300 border border-slate-700 shadow-sm'
                     : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
                 }`}
+                title="Exibir todos os arquivos do workspace (fluxos + layouts)"
               >
-                Todos ({showLayoutDiagrams ? diagramList.length : diagramList.filter((d) => !d.isDiagramLayout).length})
+                Todos ({diagramList.length})
+              </button>
+              <button
+                onClick={() => setDiagramTypeFilter('semantic')}
+                className={`px-2 py-1 rounded text-center transition font-medium ${
+                  diagramTypeFilter === 'semantic'
+                    ? 'bg-sky-950 text-sky-300 border border-sky-800 shadow-sm'
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
+                }`}
+                title="Exibir apenas os fluxos sem arquivos de layout duplicados"
+              >
+                Fluxos ({diagramList.filter((d) => !d.isDiagramLayout).length})
               </button>
               <button
                 onClick={() => setDiagramTypeFilter('executionflow')}
-                className={`flex-1 py-1 rounded text-center transition font-medium ${
+                className={`px-2 py-1 rounded text-center transition font-medium ${
                   diagramTypeFilter === 'executionflow'
                     ? 'bg-sky-950 text-sky-300 border border-sky-800 shadow-sm'
                     : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
                 }`}
               >
-                Execution ({diagramList.filter((d) => d.type === 'executionflow' && (showLayoutDiagrams || !d.isDiagramLayout)).length})
+                Execution ({diagramList.filter((d) => d.type === 'executionflow' && !d.isDiagramLayout).length})
               </button>
               <button
                 onClick={() => setDiagramTypeFilter('stateflow')}
-                className={`flex-1 py-1 rounded text-center transition font-medium ${
+                className={`px-2 py-1 rounded text-center transition font-medium ${
                   diagramTypeFilter === 'stateflow'
                     ? 'bg-amber-950 text-amber-300 border border-amber-800 shadow-sm'
                     : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
                 }`}
               >
-                State ({diagramList.filter((d) => d.type === 'stateflow' && (showLayoutDiagrams || !d.isDiagramLayout)).length})
+                State ({diagramList.filter((d) => d.type === 'stateflow' && !d.isDiagramLayout).length})
               </button>
-            </div>
-
-            {/* Contador de Diagramas & Toggle de Layouts .diagram */}
-            <div className="flex items-center justify-between text-[11px] px-1 pt-1.5 border-t border-slate-800/60 text-slate-400">
-              <span className="truncate">
-                {diagramList.filter((d) => !d.isDiagramLayout).length} fluxos
-                {diagramList.filter((d) => d.isDiagramLayout).length > 0 &&
-                  ` (+ ${diagramList.filter((d) => d.isDiagramLayout).length} layouts)`}
-              </span>
-              <label
-                className="flex items-center gap-1.5 cursor-pointer hover:text-slate-200 select-none shrink-0"
-                title="Exibir também os arquivos .diagram na listagem (total de arquivos do workspace)"
+              <button
+                onClick={() => setDiagramTypeFilter('layout')}
+                className={`px-2 py-1 rounded text-center transition font-medium ${
+                  diagramTypeFilter === 'layout'
+                    ? 'bg-indigo-950 text-indigo-300 border border-indigo-800 shadow-sm'
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
+                }`}
+                title="Exibir apenas arquivos de layout .diagram"
               >
-                <input
-                  type="checkbox"
-                  checked={showLayoutDiagrams}
-                  onChange={(e) => setShowLayoutDiagrams(e.target.checked)}
-                  className="rounded bg-slate-950 border-slate-700 text-sky-500 focus:ring-0 w-3.5 h-3.5"
-                />
-                <span className="text-[10px]">Ver .diagram</span>
-              </label>
+                Layouts ({diagramList.filter((d) => d.isDiagramLayout).length})
+              </button>
             </div>
           </div>
 
@@ -1467,21 +1479,20 @@ export function App() {
           </div>
 
           {/* Seção Inferior: Classes Java Scanner (Mic*) */}
-          <div className="h-48 border-t border-slate-800 flex flex-col bg-slate-900/60">
+          <div className="h-52 border-t border-slate-800 flex flex-col bg-slate-900/60">
             <div className="p-2 border-b border-slate-800/80 flex items-center justify-between">
               <div className="flex items-center gap-1.5">
                 <span className="text-amber-400 font-mono text-[11px]">☕</span>
-                <span className="text-xs font-semibold text-slate-300">Classes Java (MIC*)</span>
+                <span className="text-xs font-semibold text-slate-300">
+                  Classes MIC ({filteredClasses.length})
+                </span>
               </div>
               <button
-                onClick={() => setMicOnly(!micOnly)}
-                className={`text-[9px] px-1.5 py-0.2 rounded border transition ${
-                  micOnly
-                    ? 'bg-amber-950 text-amber-300 border-amber-800'
-                    : 'bg-slate-800 text-slate-400 border-slate-700'
-                }`}
+                onClick={handleChooseWorkspaceFolder}
+                className="text-[10px] px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-sky-300 border border-slate-700 transition"
+                title="Carregar pasta do projeto (ou subpasta de fontes)"
               >
-                {micOnly ? 'MIC*' : 'Todas'}
+                + Carregar
               </button>
             </div>
 
@@ -1490,8 +1501,8 @@ export function App() {
                 type="text"
                 value={javaSearch}
                 onChange={(e) => setJavaSearch(e.target.value)}
-                placeholder="Filtrar classe Java..."
-                className="w-full bg-slate-950 border border-slate-800 rounded px-2 py-0.5 text-xs text-slate-200 focus:outline-none focus:border-sky-600 placeholder:text-slate-600 font-mono"
+                placeholder="Buscar MIC* (ex: Mic**ajustes)..."
+                className="w-full bg-slate-950 border border-slate-800 rounded px-2 py-1 text-xs text-slate-200 focus:outline-none focus:border-sky-600 placeholder:text-slate-600 font-mono"
               />
             </div>
 
@@ -1550,6 +1561,7 @@ export function App() {
               onDropNewNode={(type, pos) => handleCreateNode(type, pos)}
               onDeleteNode={handleDeleteNode}
               onDeleteEdge={handleDeleteEdge}
+              onUpdateEdgeLabel={handleUpdateEdgeLabelById}
             />
           </div>
 

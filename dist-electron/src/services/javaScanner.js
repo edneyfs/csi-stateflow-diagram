@@ -12,7 +12,7 @@ class JavaScanner {
      * Varre recursivamente um diretório procurando arquivos .java
      * e extraindo definições de classes (em especial classes com prefixo 'Mic*')
      */
-    static async scanDirectory(directoryPath) {
+    static async scanDirectory(directoryPath, onlyMic = true) {
         const results = [];
         async function walk(dir) {
             const entries = await fs_1.default.promises.readdir(dir, { withFileTypes: true });
@@ -25,6 +25,10 @@ class JavaScanner {
                     }
                 }
                 else if (entry.isFile() && entry.name.endsWith('.java')) {
+                    const simpleName = entry.name.replace(/\.java$/, '');
+                    const isMic = simpleName.startsWith('Mic');
+                    if (onlyMic && !isMic)
+                        continue;
                     try {
                         const simpleName = entry.name.replace(/\.java$/, '');
                         const isMic = simpleName.startsWith('Mic');
