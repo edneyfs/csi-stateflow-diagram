@@ -356,45 +356,107 @@ export function App() {
   } | null>(null);
 
   // Carrega e renderiza um diagrama a partir do arquivo XML (Desktop ou Web)
+  // Suporta resolução de layout companion (.executionflow_diagram e .stateflow_diagram)
   const handleOpenDiagram = useCallback(
     async (d: DiagramFileInfo) => {
-      setActiveTab(d.name);
-      setCurrentFileRelativePath(d.relativePath);
-      setCurrentFileFullPath(d.fullPath || '');
+      // 1. Redirecionamento transparente caso o usuário clique em um arquivo de layout _diagram
+      let semanticInfo = d;
+      let companionLayoutPath = '';
+      let companionLayoutRel = '';
 
-      let xml: string | null = null;
+      if (d.isDiagramLayout || d.name.endsWith('_diagram')) {
+        const semanticName = d.name.replace(/_diagram$/, '');
+        const semanticRel = d.relativePath.replace(/_diagram$/, '');
+        const semanticFull = d.fullPath ? d.fullPath.replace(/_diagram$/, '') : '';
+        const isExecution = semanticName.includes('executionflow');
+        semanticInfo = {
+          name: semanticName,
+          relativePath: semanticRel,
+          folder: d.folder,
+          fullPath: semanticFull,
+          type: isExecution ? 'executionflow' : 'stateflow',
+          isDiagramLayout: false,
+          hasCompanionLayout: true,
+        };
+        companionLayoutPath = d.fullPath || '';
+        companionLayoutRel = d.relativePath;
+      } else {
+        companionLayoutPath = d.fullPath ? `${d.fullPath}_diagram` : '';
+        companionLayoutRel = `${d.relativePath}_diagram`;
+      }
 
-      // 1. Leitura via Electron IPC
-      if (window.api && d.fullPath) {
-        try {
-          xml = await window.api.readFile(d.fullPath);
-        } catch (err) {
-          console.warn('Erro ao ler diagrama via IPC, utilizando fallback:', err);
+      setActiveTab(semanticInfo.name);
+      setCurrentFileRelativePath(semanticInfo.relativePath);
+      setCurrentFileFullPath(semanticInfo.fullPath || '');
+
+      let semanticXml: string | null = null;
+      let notationXml: string | null = null;
+
+      // 2. Leitura via Electron IPC
+      if (window.api) {
+        if (semanticInfo.fullPath) {
+          try {
+            semanticXml = await window.api.readFile(semanticInfo.fullPath);
+          } catch (err) {
+            console.warn('Erro ao ler diagrama semântico via IPC:', err);
+          }
+        }
+        if (companionLayoutPath) {
+          try {
+            notationXml = await window.api.readFile(companionLayoutPath);
+          } catch {
+            // Arquivo de layout notation é opcional
+          }
         }
       }
 
-      // 2. Leitura via File System Access API no navegador
-      if (!xml && WebFileSystemService.getCurrentHandle()) {
+      // 3. Leitura via File System Access API no navegador
+      if (!semanticXml && WebFileSystemService.getCurrentHandle()) {
         try {
-          xml = await WebFileSystemService.readFile(d.relativePath);
+          semanticXml = await WebFileSystemService.readFile(semanticInfo.relativePath);
         } catch (err) {
           console.warn('Erro ao ler diagrama via Web File System API:', err);
         }
+        if (companionLayoutRel) {
+          try {
+            notationXml = await WebFileSystemService.readFile(companionLayoutRel);
+          } catch {
+            // Arquivo de layout notation é opcional
+          }
+        }
       }
 
-      if (xml) {
+      if (semanticXml) {
         try {
-          const model = XmlEngine.parse(xml);
+          const model = XmlEngine.parse(semanticXml);
           setCurrentModel(model);
-          const { nodes, edges } = GraphConverter.modelToGraph(model);
+
+          let notationPositions: Map<string, { x: number; y: number }> | undefined;
+          if (notationXml) {
+            try {
+              notationPositions = XmlEngine.parseNotationBounds(notationXml);
+            } catch (boundsErr) {
+              console.warn('Falha ao extrair bounds do arquivo .diagram:', boundsErr);
+            }
+          }
+
+          const { nodes, edges } = GraphConverter.modelToGraph(model, notationPositions);
           setCurrentNodes(nodes);
           setCurrentEdges(edges);
           setSelectedNode(nodes.find((n) => n.type === 'executable') || nodes[0] || null);
-          showToast(`Diagrama ${d.name} carregado com sucesso!`, 'success');
+
+          if (notationPositions && notationPositions.size > 0) {
+            showToast(
+              `Diagrama ${semanticInfo.name} carregado com layout visual original do Eclipse (${nodes.length} nós)!`,
+              'success'
+            );
+          } else {
+            showToast(`Diagrama ${semanticInfo.name} carregado com sucesso (${nodes.length} nós)!`, 'success');
+          }
           return;
         } catch (parseErr: any) {
           console.error('Erro no parser do XML:', parseErr);
-          showToast(`Erro na estrutura XML de ${d.name}`, 'error');
+          showToast(`Erro na estrutura XML de ${semanticInfo.name}: ${parseErr.message || parseErr}`, 'error');
         }
       }
 
@@ -462,6 +524,11 @@ export function App() {
   // Filtro da lista de diagramas no painel esquerdo
   const filteredDiagrams = useMemo(() => {
     return diagramList.filter((d) => {
+      // Oculta arquivos puramente de layout notation (_diagram) da listagem principal
+      // a menos que o usuário pesquise explicitamente por "_diagram"
+      const isSearchingDiagram = diagramSearch.toLowerCase().includes('_diagram');
+      if (d.isDiagramLayout && !isSearchingDiagram) return false;
+
       if (diagramTypeFilter !== 'all' && d.type !== diagramTypeFilter) return false;
       if (!diagramSearch) return true;
       const term = diagramSearch.toLowerCase();
@@ -1091,7 +1158,7 @@ export function App() {
                     : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
                 }`}
               >
-                Todos ({diagramList.length})
+                Todos ({diagramList.filter((d) => !d.isDiagramLayout).length})
               </button>
               <button
                 onClick={() => setDiagramTypeFilter('executionflow')}
@@ -1101,7 +1168,7 @@ export function App() {
                     : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
                 }`}
               >
-                Execution ({diagramList.filter((d) => d.type === 'executionflow').length})
+                Execution ({diagramList.filter((d) => d.type === 'executionflow' && !d.isDiagramLayout).length})
               </button>
               <button
                 onClick={() => setDiagramTypeFilter('stateflow')}
@@ -1111,7 +1178,7 @@ export function App() {
                     : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
                 }`}
               >
-                State ({diagramList.filter((d) => d.type === 'stateflow').length})
+                State ({diagramList.filter((d) => d.type === 'stateflow' && !d.isDiagramLayout).length})
               </button>
             </div>
           </div>
@@ -1148,15 +1215,25 @@ export function App() {
                         </span>
                         <span className="font-semibold text-xs truncate tracking-tight">{d.name}</span>
                       </div>
-                      <span
-                        className={`text-[9px] px-1.5 py-0.2 rounded font-mono font-medium uppercase ${
-                          isExecution
-                            ? 'bg-sky-950 text-sky-400 border border-sky-800/60'
-                            : 'bg-amber-950 text-amber-400 border border-amber-800/60'
-                        }`}
-                      >
-                        {isExecution ? 'EXEC' : 'STATE'}
-                      </span>
+                      <div className="flex items-center gap-1 shrink-0">
+                        {d.hasCompanionLayout && (
+                          <span
+                            className="text-[9px] px-1.5 py-0.2 rounded font-mono bg-indigo-950/90 text-indigo-300 border border-indigo-800/60"
+                            title="Possui layout visual original do Eclipse (.diagram)"
+                          >
+                            📐 Layout
+                          </span>
+                        )}
+                        <span
+                          className={`text-[9px] px-1.5 py-0.2 rounded font-mono font-medium uppercase ${
+                            isExecution
+                              ? 'bg-sky-950 text-sky-400 border border-sky-800/60'
+                              : 'bg-amber-950 text-amber-400 border border-amber-800/60'
+                          }`}
+                        >
+                          {isExecution ? 'EXEC' : 'STATE'}
+                        </span>
+                      </div>
                     </div>
 
                     <div className="flex items-center gap-1 text-[10px] text-slate-500 font-mono truncate">

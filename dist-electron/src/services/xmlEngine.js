@@ -11,6 +11,9 @@ class XmlEngine {
      * Converte uma string XML para o modelo tipado DiagramModel
      */
     static parse(xmlContent) {
+        if (xmlContent.includes('<notation:Diagram') || xmlContent.includes('xmlns:notation=')) {
+            throw new Error('Arquivo de layout de visualização (.diagram). O diagrama semântico correspondente (.executionflow ou .stateflow) deve ser aberto.');
+        }
         if (xmlContent.includes('executionflow:ExecutionFlow') || xmlContent.includes('executionflow.ecore')) {
             return this.parseExecutionFlow(xmlContent);
         }
@@ -20,6 +23,33 @@ class XmlEngine {
         else {
             throw new Error('Formato XML não reconhecido: não é um StateFlow nem ExecutionFlow válido.');
         }
+    }
+    /**
+     * Extrai coordenadas visuais (x, y) de elementos a partir de um arquivo de notação Eclipse (.diagram)
+     * Retorna um Map indexado pelo href relativo do elemento (ex: 'startPoint', 'executableFlowObjects.0', 'results.0', 'states.0')
+     */
+    static parseNotationBounds(notationXml) {
+        const positions = new Map();
+        if (!notationXml)
+            return positions;
+        const chunks = notationXml.split('<children xmi:type="notation:Node"');
+        for (let i = 1; i < chunks.length; i++) {
+            const chunk = chunks[i];
+            const hrefMatch = chunk.match(/href="[^"]*#\/\/@([^"]*)"/);
+            if (hrefMatch) {
+                const key = hrefMatch[1];
+                const boundsMatch = chunk.match(/<layoutConstraint\s+[^>]*\/>|<layoutConstraint\s+[^>]*>/);
+                if (boundsMatch) {
+                    const bStr = boundsMatch[0];
+                    const xMatch = bStr.match(/\bx="(-?\d+)"/);
+                    const yMatch = bStr.match(/\by="(-?\d+)"/);
+                    const x = xMatch ? parseInt(xMatch[1], 10) : 0;
+                    const y = yMatch ? parseInt(yMatch[1], 10) : 0;
+                    positions.set(key, { x, y });
+                }
+            }
+        }
+        return positions;
     }
     /**
      * Parse específico de ExecutionFlow

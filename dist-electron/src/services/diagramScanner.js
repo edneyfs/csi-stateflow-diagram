@@ -46,6 +46,13 @@ class DiagramScanner {
         if (fs_1.default.existsSync(workspacePath)) {
             await walk(workspacePath);
         }
+        // Identifica quais diagramas semânticos possuem arquivo de layout original (.diagram)
+        const allPaths = new Set(diagrams.map((d) => d.relativePath));
+        for (const d of diagrams) {
+            if (!d.isDiagramLayout) {
+                d.hasCompanionLayout = allPaths.has(`${d.relativePath}_diagram`);
+            }
+        }
         return diagrams.sort((a, b) => a.relativePath.localeCompare(b.relativePath));
     }
 }

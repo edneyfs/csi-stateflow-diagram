@@ -249,6 +249,15 @@ export class WebFileSystemService {
     }
 
     await walk(root);
+
+    // Identifica quais diagramas semânticos possuem companion layout (.diagram)
+    const allPaths = new Set(diagrams.map((d) => d.relativePath));
+    for (const d of diagrams) {
+      if (!d.isDiagramLayout) {
+        d.hasCompanionLayout = allPaths.has(`${d.relativePath}_diagram`);
+      }
+    }
+
     return diagrams.sort((a, b) => a.relativePath.localeCompare(b.relativePath));
   }
 

@@ -5,49 +5,62 @@ import type { DiagramModel, ExecutionFlowModel, StateFlowModel } from '../types/
 export class GraphConverter {
   /**
    * Converte um DiagramModel em nós e arestas do React Flow com posicionamento automático
+   * ou coordenadas visuais originais extraídas de arquivo .diagram
    */
-  public static modelToGraph(model: DiagramModel): { nodes: Node[]; edges: Edge[] } {
+  public static modelToGraph(
+    model: DiagramModel,
+    notationPositions?: Map<string, { x: number; y: number }>
+  ): { nodes: Node[]; edges: Edge[] } {
     if (model.type === 'executionflow') {
-      return this.executionFlowToGraph(model);
+      return this.executionFlowToGraph(model, notationPositions);
     } else {
-      return this.stateFlowToGraph(model);
+      return this.stateFlowToGraph(model, notationPositions);
     }
   }
 
-  private static executionFlowToGraph(model: ExecutionFlowModel): { nodes: Node[]; edges: Edge[] } {
+  private static executionFlowToGraph(
+    model: ExecutionFlowModel,
+    notationPositions?: Map<string, { x: number; y: number }>
+  ): { nodes: Node[]; edges: Edge[] } {
     const nodes: Node[] = [];
     const edges: Edge[] = [];
+    const hasNotation = !!(notationPositions && notationPositions.size > 0);
 
     // 1. Nó de Início
     if (model.startPoint) {
+      const pos = notationPositions?.get('startPoint') || { x: 50, y: 150 };
       nodes.push({
         id: 'start-point',
         type: 'startPoint',
-        position: { x: 50, y: 150 },
+        position: pos,
         data: {},
       });
     }
 
     // 2. Ações Mic (Executables)
-    for (const exec of model.executableFlowObjects) {
+    model.executableFlowObjects.forEach((exec, idx) => {
+      const key = `executableFlowObjects.${idx}`;
+      const pos = notationPositions?.get(key) || { x: 0, y: 0 };
       nodes.push({
         id: exec.pathKey,
         type: 'executable',
-        position: { x: 0, y: 0 },
+        position: pos,
         data: {
           title: exec.simpleClassName || exec.className.split('.').pop() || '',
           className: exec.className,
           pathKey: exec.pathKey,
         },
       });
-    }
+    });
 
     // 3. Subfluxos
-    for (const sub of model.executionFlowObjects) {
+    model.executionFlowObjects.forEach((sub, idx) => {
+      const key = `executionFlowObjects.${idx}`;
+      const pos = notationPositions?.get(key) || { x: 0, y: 0 };
       nodes.push({
         id: sub.pathKey,
         type: 'subflow',
-        position: { x: 0, y: 0 },
+        position: pos,
         data: {
           title: sub.title || sub.id,
           id: sub.id,
@@ -56,20 +69,22 @@ export class GraphConverter {
           filePath: sub.filePath,
         },
       });
-    }
+    });
 
     // 4. Resultados
-    for (const res of model.results) {
+    model.results.forEach((res, idx) => {
+      const key = `results.${idx}`;
+      const pos = notationPositions?.get(key) || { x: 0, y: 0 };
       nodes.push({
         id: res.pathKey,
         type: 'result',
-        position: { x: 0, y: 0 },
+        position: pos,
         data: {
           title: res.executionFlowResultValue,
           pathKey: res.pathKey,
         },
       });
-    }
+    });
 
     // 5. Conexão do StartPoint
     if (model.startPointConnection?.destinationObjectPathKey) {
@@ -95,44 +110,56 @@ export class GraphConverter {
       });
     });
 
-    this.applyAutoLayout(nodes, edges);
+    if (!hasNotation) {
+      this.applyAutoLayout(nodes, edges);
+    }
+
     return { nodes, edges };
   }
 
-  private static stateFlowToGraph(model: StateFlowModel): { nodes: Node[]; edges: Edge[] } {
+  private static stateFlowToGraph(
+    model: StateFlowModel,
+    notationPositions?: Map<string, { x: number; y: number }>
+  ): { nodes: Node[]; edges: Edge[] } {
     const nodes: Node[] = [];
     const edges: Edge[] = [];
+    const hasNotation = !!(notationPositions && notationPositions.size > 0);
 
     // 1. Início
     if (model.startPoint) {
+      const pos = notationPositions?.get('startPoint') || { x: 50, y: 150 };
       nodes.push({
         id: 'start-point',
         type: 'startPoint',
-        position: { x: 50, y: 150 },
+        position: pos,
         data: {},
       });
     }
 
     // 2. Estados
-    for (const st of model.states) {
+    model.states.forEach((st, idx) => {
+      const key = `states.${idx}`;
+      const pos = notationPositions?.get(key) || { x: 0, y: 0 };
       nodes.push({
         id: st.pathKey,
         type: 'executable',
-        position: { x: 0, y: 0 },
+        position: pos,
         data: {
           title: st.id,
           description: st.description,
           pathKey: st.pathKey,
         },
       });
-    }
+    });
 
     // 3. Execution Flows dentro do StateFlow
-    for (const ef of model.executionFlows) {
+    model.executionFlows.forEach((ef, idx) => {
+      const key = `executionFlows.${idx}`;
+      const pos = notationPositions?.get(key) || { x: 0, y: 0 };
       nodes.push({
         id: ef.pathKey,
         type: 'subflow',
-        position: { x: 0, y: 0 },
+        position: pos,
         data: {
           title: ef.title || ef.id,
           id: ef.id,
@@ -140,7 +167,7 @@ export class GraphConverter {
           filePath: ef.filePath,
         },
       });
-    }
+    });
 
     // 4. Start Point Connection
     if (model.startPointConnection?.destinationStateId) {
@@ -181,7 +208,10 @@ export class GraphConverter {
       });
     });
 
-    this.applyAutoLayout(nodes, edges);
+    if (!hasNotation) {
+      this.applyAutoLayout(nodes, edges);
+    }
+
     return { nodes, edges };
   }
 

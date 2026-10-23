@@ -5,6 +5,7 @@ export interface DiagramFileInfo {
   fullPath: string;
   type: 'executionflow' | 'stateflow';
   isDiagramLayout: boolean;
+  hasCompanionLayout?: boolean;
 }
 
 export interface JavaClassInfo {

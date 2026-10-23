@@ -61,3 +61,49 @@ test('GraphConverter - Conversão de StateFlow para Nós e Arestas do React Flow
   assert.strictEqual(edge.source, '1001');
   assert.strictEqual(edge.target, '1002');
 });
+
+test('GraphConverter - Aplicação de Coordenadas Visuais Originais do Eclipse Notation (.diagram)', () => {
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<com.csi.gmf.executionflow:ExecutionFlow xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:com.csi.gmf.executionflow="http:///com/csi/gmf/executionflow.ecore" title="CARGA_DE_BASE" id="1126">
+  <executableFlowObjects pathKey="1432750890148" className="com.csi.oper.av.MicSolicitaBaseACarregar" simpleClassName="MicSolicitaBaseACarregar"/>
+  <results pathKey="1432752232864" executionFlowResultValue="MicSolicitaBaseACarregar"/>
+  <flowConnections sourcePathKey="1432750890148" destinationPathKey="1432752232864" executionFlowResultValue="DEFAULT"/>
+  <startPoint/>
+  <startPointConnection destinationObjectPathKey="1432750890148"/>
+</com.csi.gmf.executionflow:ExecutionFlow>`;
+
+  const notationXml = `<?xml version="1.0" encoding="UTF-8"?>
+<notation:Diagram xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:com.csi.gmf.executionflow="http:///com/csi/gmf/executionflow.ecore" xmlns:notation="http://www.eclipse.org/gmf/runtime/1.0.2/notation" type="Executionflow">
+  <children xmi:type="notation:Node" type="1004">
+    <element href="1126_CARGA_DE_BASE.executionflow#//@startPoint"/>
+    <layoutConstraint xmi:type="notation:Bounds" x="130" y="210"/>
+  </children>
+  <children xmi:type="notation:Node" type="1002">
+    <element href="1126_CARGA_DE_BASE.executionflow#//@executableFlowObjects.0"/>
+    <layoutConstraint xmi:type="notation:Bounds" x="65" y="115"/>
+  </children>
+  <children xmi:type="notation:Node" type="1003">
+    <element href="1126_CARGA_DE_BASE.executionflow#//@results.0"/>
+    <layoutConstraint xmi:type="notation:Bounds" x="65" y="45"/>
+  </children>
+</notation:Diagram>`;
+
+  const model = XmlEngine.parse(xml);
+  const notationPositions = XmlEngine.parseNotationBounds(notationXml);
+  const { nodes, edges } = GraphConverter.modelToGraph(model, notationPositions);
+
+  assert.strictEqual(nodes.length, 3);
+  assert.strictEqual(edges.length, 2);
+
+  const startNode = nodes.find((n) => n.id === 'start-point');
+  assert.strictEqual(startNode.position.x, 130);
+  assert.strictEqual(startNode.position.y, 210);
+
+  const micNode = nodes.find((n) => n.id === '1432750890148');
+  assert.strictEqual(micNode.position.x, 65);
+  assert.strictEqual(micNode.position.y, 115);
+
+  const resNode = nodes.find((n) => n.id === '1432752232864');
+  assert.strictEqual(resNode.position.x, 65);
+  assert.strictEqual(resNode.position.y, 45);
+});

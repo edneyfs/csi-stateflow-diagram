@@ -35,6 +35,12 @@ test('DiagramScanner - Varredura e Listagem de TODOS os Diagramas no Workspace',
   assert.ok(diagrams.some(d => d.name === '7026_CONFIRMACAO_AJUSTES.executionflow'));
   assert.ok(diagrams.some(d => d.name === 'SF_RETAGUARDA_01.stateflow'));
 
+  // Verifica identificação de companion layout (.diagram)
+  const f7025 = diagrams.find(d => d.name === '7025_AJUSTES_DURANTE_VENDA.executionflow');
+  const f7026 = diagrams.find(d => d.name === '7026_CONFIRMACAO_AJUSTES.executionflow');
+  assert.strictEqual(f7025.hasCompanionLayout, true, '7025 deve possuir companion layout');
+  assert.strictEqual(f7026.hasCompanionLayout, false, '7026 não possui companion layout');
+
   // Limpeza
   fs.rmSync(tempWorkspace, { recursive: true, force: true });
 });

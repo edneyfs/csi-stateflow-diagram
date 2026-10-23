@@ -74,3 +74,38 @@ test('XmlEngine - Parsing & Serialization de StateFlow', () => {
   assert.ok(serialized.includes('eventID="EVT_INICIAR_VENDA"'));
   assert.ok(serialized.includes('id="STATE_INICIAL"'));
 });
+
+test('XmlEngine - Rejeição segura de arquivos de layout visual notation (.diagram)', () => {
+  const notationXml = `<?xml version="1.0" encoding="UTF-8"?>
+<notation:Diagram xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:com.csi.gmf.executionflow="http:///com/csi/gmf/executionflow.ecore" xmlns:notation="http://www.eclipse.org/gmf/runtime/1.0.2/notation" xmi:id="_test" type="Executionflow">
+  <children xmi:type="notation:Node" xmi:id="_node" type="1004"/>
+</notation:Diagram>`;
+
+  assert.throws(() => {
+    XmlEngine.parse(notationXml);
+  }, /Arquivo de layout de visualização/);
+});
+
+test('XmlEngine - Extração de coordenadas visuais reais Eclipse GMF (.diagram)', () => {
+  const notationXml = `<?xml version="1.0" encoding="UTF-8"?>
+<notation:Diagram xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:com.csi.gmf.executionflow="http:///com/csi/gmf/executionflow.ecore" xmlns:notation="http://www.eclipse.org/gmf/runtime/1.0.2/notation" type="Executionflow">
+  <children xmi:type="notation:Node" type="1004">
+    <element href="1126_CARGA_DE_BASE.executionflow#//@startPoint"/>
+    <layoutConstraint xmi:type="notation:Bounds" x="130" y="210"/>
+  </children>
+  <children xmi:type="notation:Node" type="1002">
+    <element href="1126_CARGA_DE_BASE.executionflow#//@executableFlowObjects.0"/>
+    <layoutConstraint xmi:type="notation:Bounds" x="65" y="115"/>
+  </children>
+  <children xmi:type="notation:Node" type="1003">
+    <element href="1126_CARGA_DE_BASE.executionflow#//@results.0"/>
+    <layoutConstraint xmi:type="notation:Bounds" x="65" y="45"/>
+  </children>
+</notation:Diagram>`;
+
+  const bounds = XmlEngine.parseNotationBounds(notationXml);
+  assert.strictEqual(bounds.size, 3);
+  assert.deepStrictEqual(bounds.get('startPoint'), { x: 130, y: 210 });
+  assert.deepStrictEqual(bounds.get('executableFlowObjects.0'), { x: 65, y: 115 });
+  assert.deepStrictEqual(bounds.get('results.0'), { x: 65, y: 45 });
+});
