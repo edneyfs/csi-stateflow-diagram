@@ -355,6 +355,17 @@ export function App() {
     edge?: Edge | null;
   } | null>(null);
 
+  // Fecha o menu de contexto ao pressionar Escape
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setContextMenu(null);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   // Carrega e renderiza um diagrama a partir do arquivo XML (Desktop ou Web)
   // Suporta resolução de layout companion (.executionflow_diagram e .stateflow_diagram)
   const handleOpenDiagram = useCallback(
@@ -691,7 +702,6 @@ export function App() {
     setSelectedNodeId(node ? node.id : null);
     setSelectedNode(node);
     setSelectedEdge(null);
-    setContextMenu(null);
     setIsAutocompleteOpen(false);
   }, []);
 
@@ -699,7 +709,6 @@ export function App() {
     setSelectedEdge(edge);
     setSelectedNodeId(null);
     setSelectedNode(null);
-    setContextMenu(null);
     setIsAutocompleteOpen(false);
   }, []);
 
@@ -1229,7 +1238,6 @@ export function App() {
 
   return (
     <div
-      onClick={() => setContextMenu(null)}
       className="flex flex-col h-screen w-screen bg-slate-950 text-slate-100 select-none font-sans overflow-hidden"
     >
       {/* 1. Header Superior */}
@@ -2054,12 +2062,35 @@ export function App() {
         </div>
       )}
 
-      {/* 4. Menu de Contexto do Nó e Transição */}
+      {/* 4. Backdrop e Menu de Contexto do Nó e Transição */}
       {contextMenu && (
         <div
-          style={{ top: contextMenu.y, left: contextMenu.x }}
-          className="fixed bg-slate-900 border border-slate-700 shadow-2xl rounded-md py-1.5 z-50 text-xs text-slate-200 min-w-[230px] backdrop-blur"
+          className="fixed inset-0 z-40 bg-transparent"
+          onClick={(e) => {
+            e.stopPropagation();
+            setContextMenu(null);
+          }}
+          onContextMenu={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setContextMenu(null);
+          }}
+        />
+      )}
+
+      {contextMenu && (
+        <div
+          style={{
+            top: Math.max(10, Math.min(contextMenu.y, (typeof window !== 'undefined' ? window.innerHeight : 800) - 240)),
+            left: Math.max(10, Math.min(contextMenu.x, (typeof window !== 'undefined' ? window.innerWidth : 1200) - 260)),
+          }}
+          className="fixed bg-slate-900/95 border border-slate-700 shadow-2xl rounded-lg py-1.5 z-50 text-xs text-slate-200 min-w-[240px] backdrop-blur-md"
           onClick={(e) => e.stopPropagation()}
+          onMouseDown={(e) => e.stopPropagation()}
+          onContextMenu={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}
         >
           {contextMenu.edge ? (
             <>
