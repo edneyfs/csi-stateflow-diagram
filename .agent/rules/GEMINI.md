@@ -91,6 +91,7 @@ When user's prompt is NOT in English:
 - **Testing**: Mandatory. Pyramid (Unit > Int > E2E) + AAA Pattern.
 - **Performance**: Measure first. Adhere to 2025 standards (Core Web Vitals).
 - **Infra/Safety**: 5-Phase Deployment. Verify secrets security.
+- **Versionamento Contínuo**: A cada novo commit, atualizar a versão de patch (fix) no `package.json` (ex: 0.1.1 -> 0.1.2 -> 0.1.3).
 
 ### 📁 File Dependency Awareness
 
