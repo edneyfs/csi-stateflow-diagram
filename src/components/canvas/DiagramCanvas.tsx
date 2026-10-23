@@ -4,13 +4,13 @@ import {
   Background,
   Controls,
   MiniMap,
-  useNodesState,
-  useEdgesState,
-  addEdge,
-  Connection,
-  Edge,
-  Node,
-  MarkerType,
+  ReactFlowProvider,
+  useReactFlow,
+  type Connection,
+  type Edge,
+  type Node,
+  type OnNodesChange,
+  type OnEdgesChange,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
@@ -21,21 +21,32 @@ import { ResultNode } from '../nodes/ResultNode';
 import { StickyNoteNode } from '../nodes/StickyNoteNode';
 import { OrthogonalEdge } from '../edges/OrthogonalEdge';
 
-interface DiagramCanvasProps {
-  initialNodes: Node[];
-  initialEdges: Edge[];
+export interface DiagramCanvasProps {
+  nodes: Node[];
+  edges: Edge[];
+  onNodesChange: OnNodesChange;
+  onEdgesChange: OnEdgesChange;
+  onConnect: (connection: Connection) => void;
   onSelectNode: (node: Node | null) => void;
+  onSelectEdge: (edge: Edge | null) => void;
+  selectedEdgeId?: string | null;
   onContextMenuNode: (event: React.MouseEvent, node: Node) => void;
+  onDropNewNode?: (type: 'startPoint' | 'executable' | 'subflow' | 'result', position: { x: number; y: number }) => void;
 }
 
-export function DiagramCanvas({
-  initialNodes,
-  initialEdges,
+function DiagramCanvasInternal({
+  nodes,
+  edges,
+  onNodesChange,
+  onEdgesChange,
+  onConnect,
   onSelectNode,
+  onSelectEdge,
+  selectedEdgeId,
   onContextMenuNode,
+  onDropNewNode,
 }: DiagramCanvasProps) {
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+  const { screenToFlowPosition } = useReactFlow();
 
   const nodeTypes = useMemo(
     () => ({
@@ -55,40 +66,76 @@ export function DiagramCanvas({
     []
   );
 
-  const onConnect = useCallback(
-    (params: Connection) => {
-      const newEdge: Edge = {
-        ...params,
-        id: `e-${params.source}-${params.target}-${Date.now()}`,
-        type: 'orthogonal',
-        markerEnd: { type: MarkerType.ArrowClosed, color: '#94a3b8' },
-        data: { label: 'DEFAULT' },
-      };
-      setEdges((eds) => addEdge(newEdge, eds));
-    },
-    [setEdges]
-  );
-
   const onNodeClick = useCallback(
     (_: React.MouseEvent, node: Node) => {
       onSelectNode(node);
+      onSelectEdge(null);
     },
-    [onSelectNode]
+    [onSelectNode, onSelectEdge]
+  );
+
+  const onEdgeClick = useCallback(
+    (_: React.MouseEvent, edge: Edge) => {
+      onSelectEdge(edge);
+      onSelectNode(null);
+    },
+    [onSelectEdge, onSelectNode]
   );
 
   const onPaneClick = useCallback(() => {
     onSelectNode(null);
-  }, [onSelectNode]);
+    onSelectEdge(null);
+  }, [onSelectNode, onSelectEdge]);
+
+  const onDragOver = useCallback((event: React.DragEvent) => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'move';
+  }, []);
+
+  const onDrop = useCallback(
+    (event: React.DragEvent) => {
+      event.preventDefault();
+      const type = event.dataTransfer.getData('application/reactflow') as
+        | 'startPoint'
+        | 'executable'
+        | 'subflow'
+        | 'result';
+
+      if (!type || !onDropNewNode) return;
+
+      const position = screenToFlowPosition({
+        x: event.clientX,
+        y: event.clientY,
+      });
+
+      onDropNewNode(type, position);
+    },
+    [screenToFlowPosition, onDropNewNode]
+  );
+
+  // Injeta flag selected para a aresta clicada
+  const mappedEdges = useMemo(() => {
+    if (!selectedEdgeId) return edges;
+    return edges.map((e) => ({
+      ...e,
+      selected: e.id === selectedEdgeId,
+    }));
+  }, [edges, selectedEdgeId]);
 
   return (
-    <div className="w-full h-full relative bg-slate-950">
+    <div
+      className="w-full h-full relative bg-slate-950"
+      onDragOver={onDragOver}
+      onDrop={onDrop}
+    >
       <ReactFlow
         nodes={nodes}
-        edges={edges}
+        edges={mappedEdges}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
         onNodeClick={onNodeClick}
+        onEdgeClick={onEdgeClick}
         onNodeContextMenu={onContextMenuNode}
         onPaneClick={onPaneClick}
         nodeTypes={nodeTypes}
@@ -119,5 +166,13 @@ export function DiagramCanvas({
         />
       </ReactFlow>
     </div>
+  );
+}
+
+export function DiagramCanvas(props: DiagramCanvasProps) {
+  return (
+    <ReactFlowProvider>
+      <DiagramCanvasInternal {...props} />
+    </ReactFlowProvider>
   );
 }

@@ -17,6 +17,7 @@ export function OrthogonalEdge({
   style = {},
   data,
   markerEnd,
+  selected,
 }: EdgeProps) {
   const [edgePath, labelX, labelY] = getSmoothStepPath({
     sourceX,
@@ -33,13 +34,15 @@ export function OrthogonalEdge({
   return (
     <>
       <BaseEdge
+        id={id}
         path={edgePath}
         markerEnd={markerEnd}
         style={{
           ...style,
-          stroke: isStartLink ? '#64748b' : '#94a3b8',
-          strokeWidth: 2,
+          stroke: selected ? '#38bdf8' : isStartLink ? '#64748b' : '#94a3b8',
+          strokeWidth: selected ? 3 : 2,
           strokeDasharray: isStartLink ? '4 4' : undefined,
+          transition: 'stroke 0.2s, stroke-width 0.2s',
         }}
       />
       {label && (
@@ -50,7 +53,12 @@ export function OrthogonalEdge({
               transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
               pointerEvents: 'all',
             }}
-            className="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-600 text-[10px] font-mono font-medium text-slate-200 shadow-sm cursor-pointer hover:border-sky-400 hover:text-sky-300 transition"
+            className={`px-2 py-0.5 rounded text-[11px] font-mono font-semibold shadow-md cursor-pointer transition select-none ${
+              selected
+                ? 'bg-sky-600 text-white border-2 border-sky-300 ring-2 ring-sky-400/50 shadow-sky-500/30'
+                : 'bg-slate-800 border border-slate-600 text-slate-200 hover:border-sky-400 hover:text-sky-300'
+            }`}
+            title="Clique para selecionar e editar o resultado desta transição"
           >
             {label}
           </div>

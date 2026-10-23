@@ -1,5 +1,14 @@
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
-import { Node, Edge, MarkerType } from '@xyflow/react';
+import {
+  Node,
+  Edge,
+  MarkerType,
+  applyNodeChanges,
+  applyEdgeChanges,
+  type NodeChange,
+  type EdgeChange,
+  type Connection,
+} from '@xyflow/react';
 import {
   FolderOpen,
   Save,
@@ -21,13 +30,14 @@ import {
   RotateCcw,
   HardDrive,
   Download,
+  Trash2,
 } from 'lucide-react';
 import { DiagramCanvas } from './components/canvas/DiagramCanvas';
 import type { DiagramFileInfo, JavaClassInfo, DiagramReference } from './types/workspace';
 import { XmlEngine } from './services/xmlEngine';
 import { GraphConverter } from './services/graphConverter';
 import { WebFileSystemService } from './services/webFileSystem';
-import type { DiagramModel } from './types/model';
+import type { DiagramModel, ExecutionFlowModel } from './types/model';
 
 const initialSampleXml = `<?xml version="1.0" encoding="UTF-8"?>
 <com.csi.gmf.executionflow:ExecutionFlow xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:com.csi.gmf.executionflow="http:///com/csi/gmf/executionflow.ecore" id="7026" title="7026_CONFIRMACAO_AJUSTES" description="Confirmacao de Ajustes de Venda" requestAuthorization="false">
@@ -283,6 +293,7 @@ export function App() {
   const [currentNodes, setCurrentNodes] = useState<Node[]>(sampleNodes);
   const [currentEdges, setCurrentEdges] = useState<Edge[]>(sampleEdges);
   const [selectedNode, setSelectedNode] = useState<Node | null>(sampleNodes[1]);
+  const [selectedEdge, setSelectedEdge] = useState<Edge | null>(null);
 
   // Modelo de dados estruturado do diagrama ativo (ExecutionFlow / StateFlow)
   const [currentModel, setCurrentModel] = useState<DiagramModel | null>(() => {
@@ -462,10 +473,239 @@ export function App() {
     });
   }, [diagramList, diagramSearch, diagramTypeFilter]);
 
+  const onNodesChange = useCallback((changes: NodeChange[]) => {
+    setCurrentNodes((nds) => applyNodeChanges(changes, nds));
+  }, []);
+
+  const onEdgesChange = useCallback((changes: EdgeChange[]) => {
+    setCurrentEdges((eds) => applyEdgeChanges(changes, eds));
+  }, []);
+
+  const onConnect = useCallback((connection: Connection) => {
+    const newEdgeId = `e-${connection.source}-${connection.target}-${Date.now()}`;
+    const newEdge: Edge = {
+      ...connection,
+      id: newEdgeId,
+      type: 'orthogonal',
+      markerEnd: { type: MarkerType.ArrowClosed, color: '#94a3b8' },
+      data: { label: 'DEFAULT' },
+    };
+
+    setCurrentEdges((eds) => [...eds, newEdge]);
+    setSelectedEdge(newEdge);
+    setSelectedNode(null);
+
+    // Sincroniza diretamente com o modelo XML
+    setCurrentModel((prev) => {
+      if (!prev || prev.type !== 'executionflow') return prev;
+      const exec = prev as ExecutionFlowModel;
+      const newConns = [
+        ...(exec.flowConnections || []),
+        {
+          sourcePathKey: connection.source,
+          destinationPathKey: connection.target,
+          executionFlowResultValue: 'DEFAULT',
+        },
+      ];
+      return { ...exec, flowConnections: newConns };
+    });
+
+    showToast('Nova transição conectada! Rótulo padrão "DEFAULT" atribuído.', 'info');
+  }, [showToast]);
+
   const handleSelectNode = useCallback((node: Node | null) => {
     setSelectedNode(node);
+    setSelectedEdge(null);
     setContextMenu(null);
   }, []);
+
+  const handleSelectEdge = useCallback((edge: Edge | null) => {
+    setSelectedEdge(edge);
+    setSelectedNode(null);
+    setContextMenu(null);
+  }, []);
+
+  const handleCreateNode = useCallback(
+    (type: 'startPoint' | 'executable' | 'subflow' | 'result', position?: { x: number; y: number }) => {
+      const pathKey = String(Date.now());
+      const pos = position || {
+        x: 320 + (currentNodes.length % 6) * 45,
+        y: 160 + (currentNodes.length % 6) * 35,
+      };
+
+      let newNode: Node;
+
+      if (type === 'startPoint') {
+        newNode = {
+          id: 'start-point',
+          type: 'startPoint',
+          position: pos,
+          data: {},
+        };
+        setCurrentModel((prev) => (prev ? { ...prev, startPoint: { exists: true } } : prev));
+      } else if (type === 'executable') {
+        const sampleClassName = 'com.csi.oper.pos.MicNovaAcao';
+        const sampleSimpleName = 'MicNovaAcao';
+
+        newNode = {
+          id: pathKey,
+          type: 'executable',
+          position: pos,
+          data: {
+            title: sampleSimpleName,
+            className: sampleClassName,
+            pathKey,
+          },
+        };
+
+        setCurrentModel((prev) => {
+          if (!prev || prev.type !== 'executionflow') return prev;
+          const exec = prev as ExecutionFlowModel;
+          return {
+            ...exec,
+            executableFlowObjects: [
+              ...(exec.executableFlowObjects || []),
+              { pathKey, className: sampleClassName, simpleClassName: sampleSimpleName },
+            ],
+          };
+        });
+      } else if (type === 'subflow') {
+        newNode = {
+          id: pathKey,
+          type: 'subflow',
+          position: pos,
+          data: {
+            title: 'Subfluxo_Novo',
+            id: 'SUB_' + pathKey.slice(-4),
+            pathKey,
+          },
+        };
+
+        setCurrentModel((prev) => {
+          if (!prev || prev.type !== 'executionflow') return prev;
+          const exec = prev as ExecutionFlowModel;
+          return {
+            ...exec,
+            executionFlowObjects: [
+              ...(exec.executionFlowObjects || []),
+              { pathKey, id: 'SUB_' + pathKey.slice(-4), title: 'Subfluxo_Novo' },
+            ],
+          };
+        });
+      } else {
+        newNode = {
+          id: pathKey,
+          type: 'result',
+          position: pos,
+          data: {
+            title: 'SUCESSO',
+            pathKey,
+          },
+        };
+
+        setCurrentModel((prev) => {
+          if (!prev || prev.type !== 'executionflow') return prev;
+          const exec = prev as ExecutionFlowModel;
+          return {
+            ...exec,
+            results: [
+              ...(exec.results || []),
+              { pathKey, executionFlowResultValue: 'SUCESSO' },
+            ],
+          };
+        });
+      }
+
+      setCurrentNodes((nds) => [...nds, newNode]);
+      setSelectedNode(newNode);
+      setSelectedEdge(null);
+      showToast(`Elemento "${newNode.data.title || type}" adicionado ao diagrama!`, 'success');
+    },
+    [currentNodes.length, showToast]
+  );
+
+  const handleUpdateEdgeLabel = useCallback(
+    (newLabel: string) => {
+      if (!selectedEdge) return;
+
+      const updatedEdge = {
+        ...selectedEdge,
+        data: { ...selectedEdge.data, label: newLabel },
+      };
+      setSelectedEdge(updatedEdge);
+
+      setCurrentEdges((eds) =>
+        eds.map((e) => (e.id === selectedEdge.id ? updatedEdge : e))
+      );
+
+      // Sincroniza com o modelo XML
+      setCurrentModel((prev) => {
+        if (!prev) return prev;
+        if (prev.type === 'executionflow') {
+          const exec = prev as ExecutionFlowModel;
+          const newConns = exec.flowConnections?.map((conn) => {
+            if (
+              conn.sourcePathKey === selectedEdge.source &&
+              conn.destinationPathKey === selectedEdge.target
+            ) {
+              return { ...conn, executionFlowResultValue: newLabel };
+            }
+            return conn;
+          });
+          return { ...exec, flowConnections: newConns };
+        }
+        return prev;
+      });
+    },
+    [selectedEdge]
+  );
+
+  const handleDeleteEdge = useCallback(
+    (edgeId: string) => {
+      const edge = currentEdges.find((e) => e.id === edgeId);
+      setCurrentEdges((eds) => eds.filter((e) => e.id !== edgeId));
+
+      if (edge && currentModel?.type === 'executionflow') {
+        setCurrentModel((prev) => {
+          if (!prev || prev.type !== 'executionflow') return prev;
+          const exec = prev as ExecutionFlowModel;
+          const newConns = exec.flowConnections?.filter(
+            (c) => !(c.sourcePathKey === edge.source && c.destinationPathKey === edge.target)
+          );
+          return { ...exec, flowConnections: newConns };
+        });
+      }
+
+      setSelectedEdge(null);
+      showToast('Transição removida com sucesso!', 'info');
+    },
+    [currentEdges, currentModel, showToast]
+  );
+
+  const handleDeleteNode = useCallback(
+    (nodeId: string) => {
+      setCurrentNodes((nds) => nds.filter((n) => n.id !== nodeId));
+      setCurrentEdges((eds) => eds.filter((e) => e.source !== nodeId && e.target !== nodeId));
+
+      setCurrentModel((prev) => {
+        if (!prev || prev.type !== 'executionflow') return prev;
+        const exec = prev as ExecutionFlowModel;
+        return {
+          ...exec,
+          executableFlowObjects: exec.executableFlowObjects?.filter((o) => o.pathKey !== nodeId),
+          results: exec.results?.filter((r) => r.pathKey !== nodeId),
+          executionFlowObjects: exec.executionFlowObjects?.filter((s) => s.pathKey !== nodeId),
+          flowConnections: exec.flowConnections?.filter(
+            (c) => c.sourcePathKey !== nodeId && c.destinationPathKey !== nodeId
+          ),
+        };
+      });
+
+      setSelectedNode(null);
+      showToast('Nó removido do diagrama!', 'info');
+    },
+    [showToast]
+  );
 
   // Atualização em tempo real de propriedades do nó com sincronização bidirecional no modelo XML
   const handleUpdateNodeProperty = useCallback(
@@ -1000,11 +1240,16 @@ export function App() {
           {/* Interactive React Flow Canvas */}
           <div className="flex-1 relative overflow-hidden">
             <DiagramCanvas
-              key={activeTab}
-              initialNodes={currentNodes}
-              initialEdges={currentEdges}
+              nodes={currentNodes}
+              edges={currentEdges}
+              onNodesChange={onNodesChange}
+              onEdgesChange={onEdgesChange}
+              onConnect={onConnect}
               onSelectNode={handleSelectNode}
+              onSelectEdge={handleSelectEdge}
+              selectedEdgeId={selectedEdge?.id}
               onContextMenuNode={handleContextMenuNode}
+              onDropNewNode={(type, pos) => handleCreateNode(type, pos)}
             />
           </div>
 
@@ -1070,25 +1315,64 @@ export function App() {
         <aside className="w-80 bg-slate-900/95 border-l border-slate-800 flex flex-col z-20 shadow-lg">
           {/* Paleta */}
           <div className="p-3 border-b border-slate-800">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
-              Paleta de Ferramentas
-            </span>
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                Paleta de Ferramentas
+              </span>
+              <span className="text-[10px] text-slate-500 font-medium">Clique ou arraste</span>
+            </div>
             <div className="grid grid-cols-2 gap-2 mt-2">
-              <div className="p-2 rounded bg-slate-800/80 border border-slate-700/60 hover:border-sky-500 cursor-pointer flex items-center gap-2 text-xs text-slate-200 transition shadow-sm">
-                <div className="w-3 h-3 rounded-full bg-black border border-slate-400" />
-                <span>Start Point</span>
+              <div
+                draggable
+                onDragStart={(e) => {
+                  e.dataTransfer.setData('application/reactflow', 'startPoint');
+                  e.dataTransfer.effectAllowed = 'move';
+                }}
+                onClick={() => handleCreateNode('startPoint')}
+                className="p-2.5 rounded bg-slate-800/80 border border-slate-700/60 hover:border-sky-500 hover:bg-slate-800 cursor-pointer flex items-center gap-2 text-xs text-slate-200 transition shadow-sm select-none active:scale-95 group"
+                title="Clique para adicionar ou arraste para o canvas"
+              >
+                <div className="w-3.5 h-3.5 rounded-full bg-black border border-slate-400 shrink-0 group-hover:border-sky-400" />
+                <span className="font-medium">Start Point</span>
               </div>
-              <div className="p-2 rounded bg-slate-800/80 border border-slate-700/60 hover:border-sky-500 cursor-pointer flex items-center gap-2 text-xs text-slate-200 transition shadow-sm">
-                <span className="text-amber-500 text-xs">⚙</span>
-                <span>Mic Action</span>
+              <div
+                draggable
+                onDragStart={(e) => {
+                  e.dataTransfer.setData('application/reactflow', 'executable');
+                  e.dataTransfer.effectAllowed = 'move';
+                }}
+                onClick={() => handleCreateNode('executable')}
+                className="p-2.5 rounded bg-slate-800/80 border border-slate-700/60 hover:border-sky-500 hover:bg-slate-800 cursor-pointer flex items-center gap-2 text-xs text-slate-200 transition shadow-sm select-none active:scale-95 group"
+                title="Clique para adicionar ou arraste para o canvas"
+              >
+                <span className="text-amber-500 text-sm font-bold group-hover:scale-110 transition">⚙</span>
+                <span className="font-medium">Mic Action</span>
               </div>
-              <div className="p-2 rounded bg-slate-800/80 border border-slate-700/60 hover:border-sky-500 cursor-pointer flex items-center gap-2 text-xs text-slate-200 transition shadow-sm">
-                <span className="text-amber-400 text-xs">🗂</span>
-                <span>Subfluxo</span>
+              <div
+                draggable
+                onDragStart={(e) => {
+                  e.dataTransfer.setData('application/reactflow', 'subflow');
+                  e.dataTransfer.effectAllowed = 'move';
+                }}
+                onClick={() => handleCreateNode('subflow')}
+                className="p-2.5 rounded bg-slate-800/80 border border-slate-700/60 hover:border-sky-500 hover:bg-slate-800 cursor-pointer flex items-center gap-2 text-xs text-slate-200 transition shadow-sm select-none active:scale-95 group"
+                title="Clique para adicionar ou arraste para o canvas"
+              >
+                <span className="text-amber-400 text-sm group-hover:scale-110 transition">🗂</span>
+                <span className="font-medium">Subfluxo</span>
               </div>
-              <div className="p-2 rounded bg-slate-800/80 border border-slate-700/60 hover:border-sky-500 cursor-pointer flex items-center gap-2 text-xs text-slate-200 transition shadow-sm">
-                <span className="text-emerald-400 text-xs">🚩</span>
-                <span>Resultado</span>
+              <div
+                draggable
+                onDragStart={(e) => {
+                  e.dataTransfer.setData('application/reactflow', 'result');
+                  e.dataTransfer.effectAllowed = 'move';
+                }}
+                onClick={() => handleCreateNode('result')}
+                className="p-2.5 rounded bg-slate-800/80 border border-slate-700/60 hover:border-sky-500 hover:bg-slate-800 cursor-pointer flex items-center gap-2 text-xs text-slate-200 transition shadow-sm select-none active:scale-95 group"
+                title="Clique para adicionar ou arraste para o canvas"
+              >
+                <span className="text-emerald-400 text-sm group-hover:scale-110 transition">🚩</span>
+                <span className="font-medium">Resultado</span>
               </div>
             </div>
           </div>
@@ -1100,17 +1384,99 @@ export function App() {
               <span>Propriedades do Elemento</span>
             </span>
 
-            {selectedNode ? (
+            {selectedEdge ? (
+              <div className="space-y-4 text-xs">
+                <div>
+                  <div className="flex items-center justify-between">
+                    <label className="text-sky-400 text-[10px] uppercase font-bold tracking-wider">
+                      Transição (Step / Aresta)
+                    </label>
+                    <span className="text-[10px] bg-sky-950 text-sky-300 px-1.5 py-0.5 rounded border border-sky-800 font-mono">
+                      Step
+                    </span>
+                  </div>
+                  <div className="mt-1 font-mono text-[11px] text-slate-300 bg-slate-950 p-2 rounded border border-slate-800 truncate">
+                    {selectedEdge.id}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-slate-300 text-[10px] uppercase font-semibold flex items-center justify-between">
+                    <span>Rótulo / Resultado de Saída</span>
+                    <span className="text-sky-400 font-mono text-[9px]">executionFlowResultValue</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={(selectedEdge.data?.label as string) || ''}
+                    onChange={(e) => handleUpdateEdgeLabel(e.target.value)}
+                    placeholder="Ex: DEFAULT, CONFIRMAR, ABANDONAR..."
+                    className="mt-1 w-full font-mono font-bold text-sky-300 bg-slate-950 p-2 rounded border border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-400 transition text-xs shadow-inner"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-slate-500 text-[10px] uppercase font-semibold block mb-1.5">
+                    Resultados Rápidos CSI:
+                  </label>
+                  <div className="flex flex-wrap gap-1.5">
+                    {['DEFAULT', 'CONFIRMAR', 'ABANDONAR', 'SUCESSO', 'ERRO', 'CANCELAR', 'NAO_HA_AJUSTES'].map(
+                      (val) => (
+                        <button
+                          key={val}
+                          onClick={() => handleUpdateEdgeLabel(val)}
+                          className={`px-2 py-1 rounded text-[10px] font-mono font-semibold transition border ${
+                            (selectedEdge.data?.label as string) === val
+                              ? 'bg-sky-600 text-white border-sky-400 shadow-sm'
+                              : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700 hover:text-white'
+                          }`}
+                        >
+                          {val}
+                        </button>
+                      )
+                    )}
+                  </div>
+                </div>
+
+                <div className="p-2.5 rounded bg-slate-950/70 border border-slate-800 space-y-1.5 font-mono text-[11px]">
+                  <div className="flex justify-between text-slate-400">
+                    <span>Origem:</span>
+                    <span className="text-slate-200 truncate max-w-[150px]">
+                      {(currentNodes.find((n) => n.id === selectedEdge.source)?.data?.title as string) ||
+                        selectedEdge.source}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-slate-400">
+                    <span>Destino:</span>
+                    <span className="text-slate-200 truncate max-w-[150px]">
+                      {(currentNodes.find((n) => n.id === selectedEdge.target)?.data?.title as string) ||
+                        selectedEdge.target}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="pt-2">
+                  <button
+                    onClick={() => handleDeleteEdge(selectedEdge.id)}
+                    className="w-full py-1.5 px-3 bg-red-950/80 hover:bg-red-900 border border-red-800 text-red-300 rounded text-xs font-semibold transition flex items-center justify-center gap-1.5"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Excluir Transição (Delete Step)</span>
+                  </button>
+                </div>
+              </div>
+            ) : selectedNode ? (
               <div className="space-y-3 text-xs">
                 <div>
                   <label className="text-slate-500 text-[10px] uppercase font-semibold">Tipo do Nó</label>
                   <div className="mt-0.5 font-mono text-slate-300 bg-slate-950 p-2 rounded border border-slate-800">
                     {selectedNode.type === 'executable'
-                      ? 'Executable Flow Object'
+                      ? 'Executable Flow Object (Mic Action)'
                       : selectedNode.type === 'result'
                       ? 'Execution Flow Result'
                       : selectedNode.type === 'startPoint'
                       ? 'Start Point'
+                      : selectedNode.type === 'subflow'
+                      ? 'Subflow (Subfluxo)'
                       : selectedNode.type}
                   </div>
                 </div>
@@ -1152,7 +1518,7 @@ export function App() {
                   </div>
                 </div>
 
-                <div className="pt-2">
+                <div className="pt-2 flex flex-col gap-2">
                   <button
                     onClick={() =>
                       handleSearchReferences(
@@ -1164,11 +1530,18 @@ export function App() {
                     <Search className="w-3.5 h-3.5" />
                     <span>Search ExecutionFlow References...</span>
                   </button>
+                  <button
+                    onClick={() => handleDeleteNode(selectedNode.id)}
+                    className="w-full py-1.5 px-3 bg-red-950/60 hover:bg-red-900/80 border border-red-800/60 text-red-300 rounded text-xs transition flex items-center justify-center gap-1.5"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Excluir Nó do Modelo</span>
+                  </button>
                 </div>
               </div>
             ) : (
               <div className="text-slate-500 text-xs italic mt-4 text-center">
-                Selecione um nó no canvas para visualizar e editar suas propriedades.
+                Selecione um nó ou transição no canvas para visualizar e editar suas propriedades.
               </div>
             )}
           </div>
