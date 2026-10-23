@@ -1,0 +1,8 @@
+/* Estilos complementares da Central de Ajuda */
+html {
+  scroll-behavior: smooth;
+}
+
+code {
+  font-family: 'JetBrains Mono', Consolas, Monaco, monospace;
+}
