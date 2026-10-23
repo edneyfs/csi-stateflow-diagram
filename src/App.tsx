@@ -279,6 +279,7 @@ export function App() {
   const [currentFileRelativePath, setCurrentFileRelativePath] = useState<string>(
     'configuracao/padrao/diagramas/pdv/7026_CONFIRMACAO_AJUSTES.executionflow'
   );
+  const [currentFileFullPath, setCurrentFileFullPath] = useState<string>('');
   const [currentNodes, setCurrentNodes] = useState<Node[]>(sampleNodes);
   const [currentEdges, setCurrentEdges] = useState<Edge[]>(sampleEdges);
   const [selectedNode, setSelectedNode] = useState<Node | null>(sampleNodes[1]);
@@ -348,6 +349,7 @@ export function App() {
     async (d: DiagramFileInfo) => {
       setActiveTab(d.name);
       setCurrentFileRelativePath(d.relativePath);
+      setCurrentFileFullPath(d.fullPath || '');
 
       let xml: string | null = null;
 
@@ -666,8 +668,16 @@ export function App() {
       const xml = XmlEngine.serialize(currentModel);
 
       // 1. Electron Desktop
-      if (window.api && currentFileRelativePath) {
-        await window.api.writeFile(currentFileRelativePath, xml);
+      if (window.api) {
+        let targetPath = currentFileFullPath;
+        if (!targetPath) {
+          if (workspacePath && currentFileRelativePath) {
+            targetPath = `${workspacePath.replace(/[\\/]+$/, '')}/${currentFileRelativePath.replace(/^[\\/]+/, '')}`;
+          } else {
+            targetPath = currentFileRelativePath || activeTab;
+          }
+        }
+        await window.api.writeFile(targetPath, xml);
         showToast(`Diagrama ${activeTab} salvo no disco via Desktop!`, 'success');
         return;
       }
